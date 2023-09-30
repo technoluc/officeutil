@@ -1,7 +1,10 @@
 name: Update Branch
 
 on:
-  push: 
+  push:
+    paths-ignore:
+      - '**.md'
+      - '**.yaml'
     branches: 
       - main
       - test*
