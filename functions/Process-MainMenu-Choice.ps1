@@ -16,7 +16,7 @@ function Process-MainMenu-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "$SubMenu3Item1"
+            Write-Host " Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
             Run-MAS
             Read-Host "Druk op Enter om terug te gaan naar het hoofdmenu..."
             Show-MainMenu

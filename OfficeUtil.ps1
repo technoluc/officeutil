@@ -6,44 +6,46 @@
 ################################################################################################################
 
 Start-Transcript $ENV:TEMP\testmenu.log -Append
+function Process-SubMenu1-Choice {
+    param (
+        [string]$choice
+    )
 
-##################################################
-#                   MENU ITEMS                   #
-##################################################
-# Edit in Show-MainMenu.ps1 and Process-MainMenu.ps1 when adding or removing items
-
-$MainMenuItem1 = "Install Microsoft Office"
-$MainMenuItem2 = "Uninstall Microsoft Office"
-$MainMenuItem3 = "Activate Microsoft Office"
-
-# Edit in Show-SubMenu1.ps1 and Process-SubMenu1.ps1 when adding or removing items
-
-$SubMenu1Item1 = "Install Microsoft Office 365 Business"
-$SubMenu1Item2 = "Install Microsoft Office 2021 Pro Plus"
-$SubMenu1Item3 = "Install Microsoft Office Deployment Tool"
-
-# Edit in Show-SubMenu2.ps1 and Process-SubMenu2.ps1 when adding or removing items
-$SubMenu2Item1 = "Run Office Removal Tool with SaRa "
-$SubMenu2Item2 = "Run Office Removal Tool with Office365 Setup"
-$SubMenu2Item3 = "Run Office Scrubber"
-
-# Edit in Show-SubMenu3.ps1 and Process-SubMenu3.ps1 when adding or removing items
-$SubMenu3Item1 = "Massgrave.dev Microsoft Activation Scripts"
-$SubMenu3Item2 = "Placeholder..."
-$SubMenu3Item3 = "Placeholder..."
-Function Invoke-Logo {
-    
-    Clear-Host
-    Write-Host ""
-    Write-Host "___________           .__                  .____                    "
-    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
-    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
-    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
-    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
-    Write-Host "             \/     \/     \/     \/               \/           \/  "
-    Write-Host ""
-    Write-Host "                      TechnoLuc's Office Utility                    "
-    Write-Host ""
+    switch ($choice) {
+        '1' {
+            Invoke-Logo
+            Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
+            # Voer hier de stappen uit voor Suboptie 1.1
+            Read-Host "Druk op Enter om verder te gaan..."
+            Show-SubMenu1
+        }
+        '2' {
+            Invoke-Logo
+            Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
+            # Voer hier de stappen uit voor Suboptie 1.2
+            Read-Host "Druk op Enter om verder te gaan..."
+            Show-SubMenu1
+        }
+        '3' {
+            Invoke-Logo
+            Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
+            # Voer hier de stappen uit voor Suboptie 1.3
+            Read-Host "Druk op Enter om verder te gaan..."
+            Show-SubMenu1
+        }
+        'q' {
+            Write-Host "Afsluiten..."
+            exit
+        }
+        '0' {
+            Show-MainMenu
+        }
+        default {
+            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Read-Host "Druk op Enter om door te gaan..."
+            Show-SubMenu1
+        }
+    }
 }
 function Process-MainMenu-Choice {
     param (
@@ -63,7 +65,7 @@ function Process-MainMenu-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "$SubMenu3Item1"
+            Write-Host " Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
             Run-MAS
             Read-Host "Druk op Enter om terug te gaan naar het hoofdmenu..."
             Show-MainMenu
@@ -75,42 +77,61 @@ function Process-MainMenu-Choice {
         }
     }
 }
-function Process-SubMenu1-Choice {
-    param (
-        [string]$choice
-    )
-
-    switch ($choice) {
-        '1' {
-            Invoke-Logo
-            Write-Host "$SubMenu1Item1"
-            # Voer hier de stappen uit voor Suboptie 1.1
-            Read-Host "Druk op Enter om verder te gaan..."
-            Show-SubMenu1
-        }
-        '2' {
-            Invoke-Logo
-            Write-Host "$SubMenu1Item2 is geselecteerd"
-            # Voer hier de stappen uit voor Suboptie 1.2
-            Read-Host "Druk op Enter om verder te gaan..."
-            Show-SubMenu1
-        }
-        '3' {
-            Invoke-Logo
-            Write-Host "$SubMenu1Item3 is geselecteerd"
-            # Voer hier de stappen uit voor Suboptie 1.3
-            Read-Host "Druk op Enter om verder te gaan..."
-            Show-SubMenu1
-        }
-        '0' {
-            Show-MainMenu
-        }
-        default {
-            Write-Host "Ongeldige optie. Probeer opnieuw."
-            Read-Host "Druk op Enter om door te gaan..."
-            Show-SubMenu1
-        }
-    }
+function Run-MAS {
+  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
+  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
+}
+Function Invoke-Logo {
+    
+    Clear-Host
+    Write-Host ""
+    Write-Host "___________           .__                  .____                    "
+    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
+    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
+    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
+    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
+    Write-Host "             \/     \/     \/     \/               \/           \/  "
+    Write-Host ""
+    Write-Host "                      TechnoLuc's Office Utility                    "
+    Write-Host ""
+}
+function Show-SubMenu2 {
+  Invoke-Logo
+  Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "1. Run Office Removal Tool with SaRa"
+  Write-Host "2. Run Office Removal Tool with Office365 Setup"
+  Write-Host "3. Run Office Scrubber"
+  Write-Host "0. Terug naar hoofdmenu"
+  Write-Host "Q. Quit"
+  Write-Host ""
+  $choice = Read-Host "Selecteer een optie (0-3)"
+  Process-SubMenu2-Choice $choice
+}
+function Show-MainMenu {
+  Invoke-Logo
+  Write-Host "Hoofdmenu" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office" -ForegroundColor Green
+  Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
+  Write-Host "0. Exit" -ForegroundColor Red
+  Write-Host ""
+  $choice = Read-Host "Selecteer een optie (0-3)"
+  Process-MainMenu-Choice $choice
+}
+function Show-SubMenu1 {
+  Invoke-Logo
+  Write-Host "Install Microsoft Office" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office 365 Business"
+  Write-Host "2. Install Microsoft Office 2021 Pro Plus"
+  Write-Host "3. Install Microsoft Office Deployment Tool"
+  Write-Host "0. Terug naar hoofdmenu"
+  Write-Host "Q. Quit"
+  Write-Host ""
+  $choice = Read-Host "Selecteer een optie (0-3)"
+  Process-SubMenu1-Choice $choice
 }
 function Process-SubMenu2-Choice {
     param (
@@ -139,6 +160,10 @@ function Process-SubMenu2-Choice {
             Read-Host "Druk op Enter om verder te gaan..."
             Show-SubMenu2
         }
+        'q' {
+            Write-Host "Afsluiten..."
+            exit
+        }
         '0' {
             Show-MainMenu
         }
@@ -148,48 +173,6 @@ function Process-SubMenu2-Choice {
             Show-SubMenu2
         }
     }
-}
-function Run-MAS {
-  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
-  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
-}
-function Show-MainMenu {
-  Invoke-Logo
-  Write-Host "Hoofdmenu" -ForegroundColor Green
-  Write-Host ""
-  Write-Host "1. $MainMenuItem1"
-  Write-Host "2. $MainMenuItem2"
-  Write-Host "3. $MainMenuItem3"
-  Write-Host "0. Exit" -ForegroundColor Red
-  Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
-  Process-MainMenu-Choice $choice
-}
-function Show-SubMenu1 {
-  Clear-Host
-  Invoke-Logo
-  Write-Host "$MainMenuItem1" -ForegroundColor Yellow
-  Write-Host ""
-  Write-Host "1. $SubMenu1Item1"
-  Write-Host "2. $SubMenu1Item2"
-  Write-Host "3. $SubMenu1Item3"
-  Write-Host "0. Terug naar hoofdmenu"
-  Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
-  Process-SubMenu1-Choice $choice
-}
-function Show-SubMenu2 {
-  Clear-Host
-  Invoke-Logo
-  Write-Host "$MainMenuItem2" -ForegroundColor Yellow
-  Write-Host ""
-  Write-Host "1. $SubMenu2Item1"
-  Write-Host "2. $SubMenu2Item2"
-  Write-Host "3. $SubMenu2Item3"
-  Write-Host "0. Terug naar hoofdmenu"
-  Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
-  Process-SubMenu2-Choice $choice
 }
 #===========================================================================
 # Shows the form
