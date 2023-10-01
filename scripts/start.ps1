@@ -5,26 +5,28 @@ Start-Transcript $ENV:TEMP\OfficeUtil.log
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/scripts/main/officeutil/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/scripts/update/officeutil/OfficeUtil.ps1"
 $OfficeUtilPath = "C:\OfficeUtil"
 
-$odtInstaller = "C:\OfficeUtil\odtInstaller.exe"
+$odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
-$setupExe = "C:\Program Files\OfficeDeploymentTool\setup.exe"
-$configuration21XML = "C:\Program Files\OfficeDeploymentTool\config21.xml"
-$configuration365XML = "C:\Program Files\OfficeDeploymentTool\config365.xml"
+$setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
+$configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
+$configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
 
 # OfficeScrubber
-$ArchiveUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
-$ScrubberPath = "C:\OfficeUtil\OfficeScrubber"
-$ScrubberArchive = "OfficeScrubber_11.7z"
-$ScrubberCmd = "OfficeScrubber.cmd"
-$ScrubberFullPath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberCmd
+$ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
+$ScrubberArchiveName = "OfficeScrubber_11.7z"
+$ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
+$ScrubberCmdName = "OfficeScrubber.cmd"
+$ScrubberCmdPath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberCmdName
 
+# Office Removal Tool
 $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-removal-tool/main/msoffice-removal-tool.ps1"
-$OfficeRemovalTool = "msoffice-removal-tool.ps1"
+$OfficeRemovalToolName = "msoffice-removal-tool.ps1"
 $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalTool
+
 
 # Unattended Arguments for Office Installation
 $UnattendedArgs21 = "/configure `"$configuration21XML`""

@@ -1,33 +1,33 @@
 function Get-OfficeScrubber {
   param (
-    [string]$ArchiveUrl,
-    [string]$ScrubberPath,
-    [string]$ScrubberArchive,
+    [string]$ScrubberBaseUrl,
+    [string]$OfficeUtilPath,
+    [string]$ScrubberArchiveName,
     [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
   )
 
   # Combineer het pad naar het archief
-  $ArchivePath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberArchive
+  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
   # Maak de map als deze nog niet bestaat
-  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
-    New-Item -Path $ScrubberPath -ItemType Directory ;
+  if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
+    New-Item -Path $OfficeUtilPath -ItemType Directory ;
   }
 
   try {
     # Download het archief
-    Invoke-WebRequest -Uri $ArchiveUrl -OutFile $ArchivePath
+    Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath
 
     # Uitpakken van het archief met het volledige pad naar 7z
-    & $7zPath x $ArchivePath -o"$ScrubberPath"
+    & $7zPath x $ScrubberArchivePath -o"$OfficeUtilPath"
 
-    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $ScrubberPath"
+    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $OfficeUtilPath"
   }
   catch {
     Write-Host "Er is een fout opgetreden bij het downloaden en uitpakken van het archief: $_"
   }
   finally {
     # Opruimen: Verwijder het gedownloade archief
-    Remove-Item -Path $ArchivePath -Force
+    Remove-Item -Path $ScrubberArchivePath -Force
   }
 }

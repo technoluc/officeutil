@@ -23,7 +23,8 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
-            Get-OfficeScrubber
+            Install-7ZipIfNeeded
+            # Get-OfficeScrubber
             Run-OfficeScrubber
             # Voer hier de stappen uit voor Suboptie 1.3
             Write-Host -NoNewLine "Press any key to continue... "
