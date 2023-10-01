@@ -28,8 +28,8 @@ function Process-MainMenu-Choice {
         }
         default {
             # Read-Host "Press Enter to continue..."
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            # Write-Host "Invalid option. Please try again."
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }

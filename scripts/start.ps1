@@ -26,7 +26,7 @@ $ScrubberCmdPath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberCmdName
 # Office Removal Tool
 $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-removal-tool/main/msoffice-removal-tool.ps1"
 $OfficeRemovalToolName = "msoffice-removal-tool.ps1"
-$OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalTool
+$OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalToolName
 
 
 # Unattended Arguments for Office Installation
