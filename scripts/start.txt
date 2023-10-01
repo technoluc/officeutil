@@ -14,6 +14,8 @@ $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
 
+
+
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
 $ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
@@ -30,8 +32,8 @@ $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemov
 
 
 # Unattended Arguments for Office Installation
-$UnattendedArgs21 = "/configure `"$configuration21XML`""
-$UnattendedArgs365 = "/configure `"$configuration365XML`""
+$UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
+$UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
 

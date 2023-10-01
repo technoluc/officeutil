@@ -18,6 +18,9 @@ function Process-SubMenu1-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
             # Perform the steps for Suboption 1.2 here
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office365
+            }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -25,10 +28,18 @@ function Process-SubMenu1-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
-            # Perform the steps for Suboption 1.3 here
-            Write-Host -NoNewLine "Press any key to continue... "
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office21
+            }
+            # else {
+            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
+            #     $x = [System.Console]::ReadKey().KeyChar
+            #     Show-MainMenu    
+            #     <# Action when all if and elseif conditions are false #>
+            # }
+            Write-Host -NoNewLine "Press any key to go back to Main Menu... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-MainMenu
         }
         'q' {
             Write-Host "Exiting..."
