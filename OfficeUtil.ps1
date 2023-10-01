@@ -12,26 +12,28 @@ Start-Transcript $ENV:TEMP\OfficeUtil.log
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/scripts/main/officeutil/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/scripts/update/officeutil/OfficeUtil.ps1"
 $OfficeUtilPath = "C:\OfficeUtil"
 
-$odtInstaller = "C:\OfficeUtil\odtInstaller.exe"
+$odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
-$setupExe = "C:\Program Files\OfficeDeploymentTool\setup.exe"
-$configuration21XML = "C:\Program Files\OfficeDeploymentTool\config21.xml"
-$configuration365XML = "C:\Program Files\OfficeDeploymentTool\config365.xml"
+$setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
+$configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
+$configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
 
 # OfficeScrubber
-$ArchiveUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
-$ScrubberPath = "C:\OfficeUtil\OfficeScrubber"
-$ScrubberArchive = "OfficeScrubber_11.7z"
-$ScrubberCmd = "OfficeScrubber.cmd"
-$ScrubberFullPath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberCmd
+$ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
+$ScrubberArchiveName = "OfficeScrubber_11.7z"
+$ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
+$ScrubberCmdName = "OfficeScrubber.cmd"
+$ScrubberCmdPath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberCmdName
 
+# Office Removal Tool
 $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-removal-tool/main/msoffice-removal-tool.ps1"
-$OfficeRemovalTool = "msoffice-removal-tool.ps1"
+$OfficeRemovalToolName = "msoffice-removal-tool.ps1"
 $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalTool
+
 
 # Unattended Arguments for Office Installation
 $UnattendedArgs21 = "/configure `"$configuration21XML`""
@@ -76,35 +78,62 @@ function Get-ODTUri {
 }
 function Get-OfficeScrubber {
   param (
-    [string]$ArchiveUrl,
-    [string]$ScrubberPath,
-    [string]$ScrubberArchive,
+    [string]$ScrubberBaseUrl,
+    [string]$OfficeUtilPath,
+    [string]$ScrubberArchiveName,
     [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
   )
 
   # Combineer het pad naar het archief
-  $ArchivePath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberArchive
+  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
   # Maak de map als deze nog niet bestaat
-  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
-    New-Item -Path $ScrubberPath -ItemType Directory ;
+  if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
+    New-Item -Path $OfficeUtilPath -ItemType Directory ;
   }
 
   try {
     # Download het archief
-    Invoke-WebRequest -Uri $ArchiveUrl -OutFile $ArchivePath
+    Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath
 
     # Uitpakken van het archief met het volledige pad naar 7z
-    & $7zPath x $ArchivePath -o"$ScrubberPath"
+    & $7zPath x $ScrubberArchivePath -o"$OfficeUtilPath"
 
-    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $ScrubberPath"
+    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $OfficeUtilPath"
   }
   catch {
     Write-Host "Er is een fout opgetreden bij het downloaden en uitpakken van het archief: $_"
   }
   finally {
     # Opruimen: Verwijder het gedownloade archief
-    Remove-Item -Path $ArchivePath -Force
+    Remove-Item -Path $ScrubberArchivePath -Force
+  }
+}
+function Install-7ZipIfNeeded {
+  $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+
+  if (-not $7ZipInstalled) {
+      Write-Host "7-Zip is niet ge??nstalleerd. Installeren..."
+      $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
+      $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
+      
+      # Download het 7-Zip-installatieprogramma
+      Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
+      
+      # Installeer 7-Zip met /S om stil te installeren
+      Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
+      
+      # Controleren op succesvolle installatie
+      $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+      if ($7ZipInstalled) {
+          Write-Host "7-Zip is succesvol ge??nstalleerd."
+      } else {
+          Write-Host "Fout: 7-Zip-installatie is mislukt."
+      }
+
+      # Verwijder het tijdelijke installatiebestand
+      Remove-Item -Path $InstallerPath -Force
+  } else {
   }
 }
 Function Invoke-Logo {
@@ -231,7 +260,8 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
-            Get-OfficeScrubber
+            Install-7ZipIfNeeded
+            # Get-OfficeScrubber
             Run-OfficeScrubber
             # Voer hier de stappen uit voor Suboptie 1.3
             Write-Host -NoNewLine "Press any key to continue... "
@@ -261,12 +291,22 @@ function Run-MAS {
   Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
 }
 function Run-OfficeScrubber {
+  Write-Host "ScrubberBaseUrl: $ScrubberBaseUrl"
+  Write-Host "OfficeUtilPath: $OfficeUtilPath"
+  Write-Host "ScrubberArchiveName: $ScrubberArchiveName"
+
   Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
-  Get-OfficeScrubber -ArchiveUrl $ArchiveUrl -ScrubberPath $ScrubberPath -ScrubberArchive $ScrubberArchive
-  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberFullPath "
+  try {
+    Get-OfficeScrubber -ScrubberBaseUrl "$ScrubberBaseUrl" -OfficeUtilPath "$OfficeUtilPath" -ScrubberArchiveName "$ScrubberArchiveName"
+  }
+  catch {
+    Write-Host "Fout opgetreden: $_"
+  }
+
+  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
   Read-Host "Press Enter to continue..."
-  Remove-Item -Path $ScrubberFullPath -Force
 }
+
 function Show-MainMenu {
   Invoke-Logo
   Write-Host "Hoofdmenu" -ForegroundColor Green
