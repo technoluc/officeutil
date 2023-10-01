@@ -304,7 +304,6 @@ function Run-OfficeScrubber {
   }
 
   Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
-  Read-Host "Press Enter to continue..."
 }
 
 function Show-MainMenu {
