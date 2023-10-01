@@ -23,16 +23,15 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
-            Install-7ZipIfNeeded
-            Run-OfficeScrubber
-            # Perform the steps for Suboption 1.3 here
+            Get-7ZipIfNeeded
+            Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         'q' {
             Write-Host "Exiting..."
-            exit
+            #exit
         }
         '0' {
             Show-MainMenu

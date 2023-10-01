@@ -30,7 +30,6 @@ function Process-SubMenu1-Choice {
         }
         'q' {
             Write-Host "Exiting..."
-            exit
         }
         '0' {
             Show-MainMenu

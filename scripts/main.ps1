@@ -7,4 +7,6 @@
 # Toon het hoofdmenu
 Show-MainMenu
 
-Stop-Transcript
+Stop-Script
+
+# Stop-Transcript

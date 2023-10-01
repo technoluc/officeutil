@@ -1,4 +1,4 @@
-function Install-7ZipIfNeeded {
+function Get-7ZipIfNeeded {
     $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
   
     if (-not $7ZipInstalled) {

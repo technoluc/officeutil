@@ -1,5 +1,5 @@
 # Start-Transcript $ENV:TEMP\OfficeUtil.log -Append
-Start-Transcript $ENV:TEMP\OfficeUtil.log
+# Start-Transcript $ENV:TEMP\OfficeUtil.log
 
 ##################################################
 #                 SET VARIABLES                  #
@@ -15,12 +15,13 @@ $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
 
 # OfficeScrubber
+$ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
 $ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
 $ScrubberArchiveName = "OfficeScrubber_11.7z"
 $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
 $ScrubberCmdName = "OfficeScrubber.cmd"
-$ScrubberCmdPath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberCmdName
+$ScrubberCmdPath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberCmdName
 
 # Office Removal Tool
 $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-removal-tool/main/msoffice-removal-tool.ps1"

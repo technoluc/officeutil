@@ -6,11 +6,11 @@ function Process-MainMenu-Choice {
     switch ($choice) {
         'q' {
             Write-Host "Exiting..."
-            exit
+            # exit
         }
         '0' {
             Write-Host "Exiting..."
-            exit
+            # exit
         }
             '1' {
             Show-SubMenu1
@@ -21,7 +21,7 @@ function Process-MainMenu-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
-            Run-MAS
+            Invoke-MAS
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
