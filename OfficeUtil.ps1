@@ -76,6 +76,45 @@ function Get-7ZipIfNeeded {
     }
   }
   
+function Get-OdtIfNeeded {
+  $OdtInstalled = Test-Path "$setupExePath"
+
+  
+  if (-not $OdtInstalled) {
+    $IntallerPresent = Test-Path "$odtInstallerPath"
+
+    if (-not $IntallerPresent) {
+
+      if (-not (Test-Path "$OfficeUtilPath")) {
+        New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
+        Write-Host "$OfficeUtilPath created"
+      }
+      if (-not (Test-Path "$odtPath")) {
+        New-Item -Path $odtPath -ItemType Directory -Force | Out-Null
+        Write-Host "$odtPath created"
+      }
+      $URL = $(Get-ODTUri)
+      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
+      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
+    }
+    Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
+    
+    # Check for successful installation
+    $OdtInstalled = Test-Path "$setupExePath" 
+    if ($OdtInstalled) {
+      Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
+    }
+    else {
+      Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
+    }
+  
+    # # Remove the temporary installation file
+    # Remove-Item -Path $InstallerPath -Force
+  } 
+  else {
+    Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
+  }
+}
 function Get-ODTUri {
   <#
       .SYNOPSIS
@@ -233,7 +272,9 @@ function Process-SubMenu1-Choice {
     switch ($choice) {
         '1' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
+            Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
+            # Perform the steps for Suboption 1.1 here
+            Get-OdtIfNeeded
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
@@ -241,7 +282,7 @@ function Process-SubMenu1-Choice {
         }
         '2' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
+            Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
             # Perform the steps for Suboption 1.2 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
@@ -249,7 +290,7 @@ function Process-SubMenu1-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
+            Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
             # Perform the steps for Suboption 1.3 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
@@ -262,8 +303,7 @@ function Process-SubMenu1-Choice {
             Show-MainMenu
         }
         default {
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
@@ -293,7 +333,7 @@ function Process-SubMenu2-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "Run Office Scrubber" -ForegroundColor Cyan
+            Write-Host "Running Office Scrubber" -ForegroundColor Cyan
             Get-7ZipIfNeeded
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
@@ -308,8 +348,7 @@ function Process-SubMenu2-Choice {
             Show-MainMenu
         }
         default {
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
@@ -334,9 +373,9 @@ function Show-SubMenu1 {
   Invoke-Logo
   Write-Host "Install Microsoft Office" -ForegroundColor Green
   Write-Host ""
-  Write-Host "1. Install Microsoft Office 365 Business"
-  Write-Host "2. Install Microsoft Office 2021 Pro Plus"
-  Write-Host "3. Install Microsoft Office Deployment Tool"
+  Write-Host "1. Install Microsoft Office Deployment Tool"
+  Write-Host "2. Install Microsoft Office 365 Business"
+  Write-Host "3. Install Microsoft Office 2021 Pro Plus"
   Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
