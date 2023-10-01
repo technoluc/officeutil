@@ -48,6 +48,164 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
   Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
   break
 }
+function Get-7ZipIfNeeded {
+    $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+  
+    if (-not $7ZipInstalled) {
+        Write-Host "7-Zip is not installed. Installing..."
+        $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
+        $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
+        
+        # Download the 7-Zip installer
+        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
+        
+        # Install 7-Zip with /S for silent installation
+        Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
+        
+        # Check for successful installation
+        $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+        if ($7ZipInstalled) {
+            Write-Host "7-Zip has been successfully installed."
+        } else {
+            Write-Host "Error: 7-Zip installation failed."
+        }
+  
+        # Remove the temporary installation file
+        Remove-Item -Path $InstallerPath -Force
+    } else {
+    }
+  }
+  
+function Get-ODTUri {
+  <#
+      .SYNOPSIS
+          Get Download URL of latest Office 365 Deployment Tool (ODT).
+      .NOTES
+          Author: Bronson Magnan
+          Twitter: @cit_bronson
+          Modified by: Marco Hofmann
+          Twitter: @xenadmin
+      .LINK
+          https://www.meinekleinefarm.net/
+  #>
+  [CmdletBinding()]
+  [OutputType([string])]
+  param ()
+
+  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+  }
+  catch {
+    Throw "Failed to connect to ODT: $url with error $_."
+    Break
+  }
+  finally {
+    $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
+    Write-Output $ODTUri.href
+  }
+}
+function Get-OfficeScrubber {
+  param (
+    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
+  )
+
+  # Combine the path to the archive
+  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
+
+  # Create the directory if it doesn't exist yet
+  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
+    New-Item -Path $ScrubberPath -ItemType Directory -Force | Out-Null
+  }
+
+  try {
+    # Download and extract the archive using 7-Zip
+    Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath -UseBasicParsing
+    & $7zPath x $ScrubberArchivePath -o"$ScrubberPath" -y > $null
+
+    Write-Host "The archive has been successfully downloaded and extracted to: $ScrubberPath" -ForegroundColor Green
+  }
+  catch {
+    Write-Host "An error occurred while downloading and extracting the archive: $_" -ForegroundColor Red
+  }
+  finally {
+    # Clean up: Remove the downloaded archive
+    if (Test-Path -Path $ScrubberArchivePath -PathType Leaf) {
+      Remove-Item -Path $ScrubberArchivePath -Force
+    }
+  }
+}
+Function Invoke-Logo {
+    
+    Clear-Host
+    Write-Host ""
+    Write-Host "___________           .__                  .____                    "
+    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
+    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
+    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
+    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
+    Write-Host "             \/     \/     \/     \/               \/           \/  "
+    Write-Host ""
+    Write-Host "                      TechnoLuc's Office Utility                    "
+    Write-Host ""
+}
+function Invoke-MAS {
+  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
+  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
+}
+function Invoke-OfficeScrubber {
+
+  try {
+    Get-OfficeScrubber
+  }
+  catch {
+    Write-Host "Fout opgetreden: $_"
+  }
+  finally {
+    Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
+
+  }
+
+  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
+}
+
+function Process-MainMenu-Choice {
+    param (
+        [string]$choice
+    )
+
+    switch ($choice) {
+        'q' {
+            Write-Host "Exiting..."
+            # exit
+        }
+        '0' {
+            Write-Host "Exiting..."
+            # exit
+        }
+            '1' {
+            Show-SubMenu1
+        }
+        '2' {
+            Show-SubMenu2
+        }
+        '3' {
+            Invoke-Logo
+            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
+            Invoke-MAS
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-MainMenu
+        }
+        default {
+            # Read-Host "Press Enter to continue..."
+            Write-Host "Invalid option. Please try again."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-MainMenu
+        }
+    }
+}
 function Process-SubMenu1-Choice {
     param (
         [string]$choice
@@ -92,219 +250,6 @@ function Process-SubMenu1-Choice {
         }
     }
 }
-function Process-MainMenu-Choice {
-    param (
-        [string]$choice
-    )
-
-    switch ($choice) {
-        'q' {
-            Write-Host "Exiting..."
-            # exit
-        }
-        '0' {
-            Write-Host "Exiting..."
-            # exit
-        }
-            '1' {
-            Show-SubMenu1
-        }
-        '2' {
-            Show-SubMenu2
-        }
-        '3' {
-            Invoke-Logo
-            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
-            Invoke-MAS
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
-        }
-        default {
-            # Read-Host "Press Enter to continue..."
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
-        }
-    }
-}
-function Get-OfficeScrubber {
-  param (
-    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
-  )
-
-  # Combine the path to the archive
-  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
-
-  # Create the directory if it doesn't exist yet
-  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
-    New-Item -Path $ScrubberPath -ItemType Directory -Force | Out-Null
-  }
-
-  try {
-    # Download and extract the archive using 7-Zip
-    Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath -UseBasicParsing
-    & $7zPath x $ScrubberArchivePath -o"$ScrubberPath" -y > $null
-
-    Write-Host "The archive has been successfully downloaded and extracted to: $ScrubberPath" -ForegroundColor Green
-  }
-  catch {
-    Write-Host "An error occurred while downloading and extracting the archive: $_" -ForegroundColor Red
-  }
-  finally {
-    # Clean up: Remove the downloaded archive
-    if (Test-Path -Path $ScrubberArchivePath -PathType Leaf) {
-      Remove-Item -Path $ScrubberArchivePath -Force
-    }
-  }
-}
-function Get-7ZipIfNeeded {
-    $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
-  
-    if (-not $7ZipInstalled) {
-        Write-Host "7-Zip is not installed. Installing..."
-        $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
-        $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
-        
-        # Download the 7-Zip installer
-        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
-        
-        # Install 7-Zip with /S for silent installation
-        Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
-        
-        # Check for successful installation
-        $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
-        if ($7ZipInstalled) {
-            Write-Host "7-Zip has been successfully installed."
-        } else {
-            Write-Host "Error: 7-Zip installation failed."
-        }
-  
-        # Remove the temporary installation file
-        Remove-Item -Path $InstallerPath -Force
-    } else {
-    }
-  }
-  
-function Stop-Script {
-  # Clean up: Remove the downloaded archive
-  if (Test-Path -Path $ScrubberPath -PathType Container) {
-    Write-Host "Removing "$ScrubberPath"\* ..." -ForegroundColor Green
-    Remove-Item -LiteralPath $ScrubberPath -Force -Recurse
-  }
-
-}
-function Invoke-MAS {
-  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
-  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
-}
-function Get-ODTUri {
-  <#
-      .SYNOPSIS
-          Get Download URL of latest Office 365 Deployment Tool (ODT).
-      .NOTES
-          Author: Bronson Magnan
-          Twitter: @cit_bronson
-          Modified by: Marco Hofmann
-          Twitter: @xenadmin
-      .LINK
-          https://www.meinekleinefarm.net/
-  #>
-  [CmdletBinding()]
-  [OutputType([string])]
-  param ()
-
-  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
-  try {
-    $response = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
-  }
-  catch {
-    Throw "Failed to connect to ODT: $url with error $_."
-    Break
-  }
-  finally {
-    $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
-    Write-Output $ODTUri.href
-  }
-}
-Function Invoke-Logo {
-    
-    Clear-Host
-    Write-Host ""
-    Write-Host "___________           .__                  .____                    "
-    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
-    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
-    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
-    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
-    Write-Host "             \/     \/     \/     \/               \/           \/  "
-    Write-Host ""
-    Write-Host "                      TechnoLuc's Office Utility                    "
-    Write-Host ""
-}
-function Show-SubMenu2 {
-  Invoke-Logo
-  Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
-  Write-Host ""
-  Write-Host "1. Run Office Removal Tool with SaRa"
-  Write-Host "2. Run Office Removal Tool with Office365 Setup"
-  Write-Host "3. Run Office Scrubber"
-  Write-Host "0. Main menu"
-  Write-Host "Q. Quit"
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-SubMenu2-Choice $choice
-}
-function Show-MainMenu {
-  Invoke-Logo
-  Write-Host "Main Menu" -ForegroundColor Green
-  Write-Host ""
-  Write-Host "1. Install Microsoft Office" -ForegroundColor Green
-  Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
-  Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
-  Write-Host "0. Exit" -ForegroundColor Red
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-MainMenu-Choice $choice
-}
-function Show-SubMenu1 {
-  Invoke-Logo
-  Write-Host "Install Microsoft Office" -ForegroundColor Green
-  Write-Host ""
-  Write-Host "1. Install Microsoft Office 365 Business"
-  Write-Host "2. Install Microsoft Office 2021 Pro Plus"
-  Write-Host "3. Install Microsoft Office Deployment Tool"
-  Write-Host "0. Main menu"
-  Write-Host "Q. Quit"
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-SubMenu1-Choice $choice
-}
-function Invoke-OfficeScrubber {
-
-  try {
-    Get-OfficeScrubber
-  }
-  catch {
-    Write-Host "Fout opgetreden: $_"
-  }
-  finally {
-    Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
-
-  }
-
-  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
-}
-
 function Process-SubMenu2-Choice {
     param (
         [string]$choice
@@ -350,6 +295,61 @@ function Process-SubMenu2-Choice {
             Show-SubMenu2
         }
     }
+}
+function Show-MainMenu {
+  Invoke-Logo
+  Write-Host "Main Menu" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office" -ForegroundColor Green
+  Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
+  Write-Host "0. Exit" -ForegroundColor Red
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-MainMenu-Choice $choice
+}
+function Show-SubMenu1 {
+  Invoke-Logo
+  Write-Host "Install Microsoft Office" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office 365 Business"
+  Write-Host "2. Install Microsoft Office 2021 Pro Plus"
+  Write-Host "3. Install Microsoft Office Deployment Tool"
+  Write-Host "0. Main menu"
+  Write-Host "Q. Quit"
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-SubMenu1-Choice $choice
+}
+function Show-SubMenu2 {
+  Invoke-Logo
+  Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "1. Run Office Removal Tool with SaRa"
+  Write-Host "2. Run Office Removal Tool with Office365 Setup"
+  Write-Host "3. Run Office Scrubber"
+  Write-Host "0. Main menu"
+  Write-Host "Q. Quit"
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-SubMenu2-Choice $choice
+}
+function Stop-Script {
+  # Clean up: Remove the downloaded archive
+  if (Test-Path -Path $ScrubberPath -PathType Container) {
+    Write-Host "Removing "$ScrubberPath"\* ..." -ForegroundColor Green
+    Remove-Item -LiteralPath $ScrubberPath -Force -Recurse
+  }
+
 }
 #===========================================================================
 # Shows the form
