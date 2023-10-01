@@ -4,7 +4,7 @@ function Invoke-OfficeRemovalTool {
     )
 
     if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
-        New-Item -Path $OfficeUtilPath -ItemType Directory
+        New-Item -Path $OfficeUtilPath -ItemType Directory | Out-Null
     }
 
     if ($UseSetupRemoval.IsPresent) {
