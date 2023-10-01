@@ -26,6 +26,10 @@ function Process-MainMenu-Choice {
     )
 
     switch ($choice) {
+        'q' {
+            Write-Host "Afsluiten..."
+            exit
+        }
         '0' {
             Write-Host "Afsluiten..."
             exit
@@ -44,8 +48,10 @@ function Process-MainMenu-Choice {
             Show-MainMenu
         }
         default {
+            # Read-Host "Druk op Enter om door te gaan..."
             Write-Host "Ongeldige optie. Probeer opnieuw."
-            Read-Host "Druk op Enter om door te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
     }
@@ -60,21 +66,24 @@ function Process-SubMenu1-Choice {
             Invoke-Logo
             Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
             # Voer hier de stappen uit voor Suboptie 1.1
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         '2' {
             Invoke-Logo
             Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
             # Voer hier de stappen uit voor Suboptie 1.2
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         '3' {
             Invoke-Logo
             Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
             # Voer hier de stappen uit voor Suboptie 1.3
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         'q' {
@@ -85,8 +94,12 @@ function Process-SubMenu1-Choice {
             Show-MainMenu
         }
         default {
+            # Write-Host "Ongeldige optie. Probeer opnieuw."
+            # Read-Host "Druk op Enter om door te gaan..."
+            # Read-Host "Druk op Enter om door te gaan..."
             Write-Host "Ongeldige optie. Probeer opnieuw."
-            Read-Host "Druk op Enter om door te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
     }
@@ -99,23 +112,26 @@ function Process-SubMenu2-Choice {
     switch ($choice) {
         '1' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with SaRa"
+            Write-Host "Run Office Removal Tool with SaRa" -ForegroundColor Cyan
             # Voer hier de stappen uit voor Suboptie 1.1
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         '2' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with Office365 Setup"
+            Write-Host "Run Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
             # Voer hier de stappen uit voor Suboptie 1.2
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         '3' {
             Invoke-Logo
-            Write-Host "Run Office Scrubber"
+            Write-Host "Run Office Scrubber" -ForegroundColor Cyan
             # Voer hier de stappen uit voor Suboptie 1.3
-            Read-Host "Druk op Enter om verder te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         'q' {
@@ -126,8 +142,12 @@ function Process-SubMenu2-Choice {
             Show-MainMenu
         }
         default {
+            # Write-Host "Ongeldige optie. Probeer opnieuw."
+            # Read-Host "Druk op Enter om door te gaan..."
+            # Read-Host "Druk op Enter om door te gaan..."
             Write-Host "Ongeldige optie. Probeer opnieuw."
-            Read-Host "Druk op Enter om door te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
     }
@@ -145,7 +165,10 @@ function Show-MainMenu {
   Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
   Write-Host "0. Exit" -ForegroundColor Red
   Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Selecteer een optie (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   Process-MainMenu-Choice $choice
 }
 function Show-SubMenu1 {
@@ -155,10 +178,13 @@ function Show-SubMenu1 {
   Write-Host "1. Install Microsoft Office 365 Business"
   Write-Host "2. Install Microsoft Office 2021 Pro Plus"
   Write-Host "3. Install Microsoft Office Deployment Tool"
-  Write-Host "0. Terug naar hoofdmenu"
+  Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Selecteer een optie (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   Process-SubMenu1-Choice $choice
 }
 function Show-SubMenu2 {
@@ -168,10 +194,13 @@ function Show-SubMenu2 {
   Write-Host "1. Run Office Removal Tool with SaRa"
   Write-Host "2. Run Office Removal Tool with Office365 Setup"
   Write-Host "3. Run Office Scrubber"
-  Write-Host "0. Terug naar hoofdmenu"
+  Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Selecteer een optie (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   Process-SubMenu2-Choice $choice
 }
 #===========================================================================
