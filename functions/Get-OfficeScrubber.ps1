@@ -1,4 +1,4 @@
-function Expand-7zArchive {
+function Get-OfficeScrubber {
   param (
     [string]$ArchiveUrl,
     [string]$ScrubberPath,
