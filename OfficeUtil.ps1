@@ -45,7 +45,36 @@ if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]:
   Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
   break
 }
-function Expand-7zArchive {
+function Get-ODTUri {
+  <#
+      .SYNOPSIS
+          Get Download URL of latest Office 365 Deployment Tool (ODT).
+      .NOTES
+          Author: Bronson Magnan
+          Twitter: @cit_bronson
+          Modified by: Marco Hofmann
+          Twitter: @xenadmin
+      .LINK
+          https://www.meinekleinefarm.net/
+  #>
+  [CmdletBinding()]
+  [OutputType([string])]
+  param ()
+
+  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+  }
+  catch {
+    Throw "Failed to connect to ODT: $url with error $_."
+    Break
+  }
+  finally {
+    $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
+    Write-Output $ODTUri.href
+  }
+}
+function Get-OfficeScrubber {
   param (
     [string]$ArchiveUrl,
     [string]$ScrubberPath,
@@ -76,35 +105,6 @@ function Expand-7zArchive {
   finally {
     # Opruimen: Verwijder het gedownloade archief
     Remove-Item -Path $ArchivePath -Force
-  }
-}
-function Get-ODTUri {
-  <#
-      .SYNOPSIS
-          Get Download URL of latest Office 365 Deployment Tool (ODT).
-      .NOTES
-          Author: Bronson Magnan
-          Twitter: @cit_bronson
-          Modified by: Marco Hofmann
-          Twitter: @xenadmin
-      .LINK
-          https://www.meinekleinefarm.net/
-  #>
-  [CmdletBinding()]
-  [OutputType([string])]
-  param ()
-
-  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
-  try {
-    $response = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
-  }
-  catch {
-    Throw "Failed to connect to ODT: $url with error $_."
-    Break
-  }
-  finally {
-    $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
-    Write-Output $ODTUri.href
   }
 }
 Function Invoke-Logo {
@@ -231,6 +231,7 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
+            Get-OfficeScrubber
             Run-OfficeScrubber
             # Voer hier de stappen uit voor Suboptie 1.3
             Write-Host -NoNewLine "Press any key to continue... "
@@ -260,43 +261,11 @@ function Run-MAS {
   Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
 }
 function Run-OfficeScrubber {
-  param (
-    [string]$ArchiveUrl,
-    [string]$ScrubberPath,
-    [string]$ScrubberArchive,
-    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
-  )
-
-  # Combineer het pad naar het archief
-  $ArchivePath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberArchive
-
-  # Maak de map als deze nog niet bestaat
-  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
-    New-Item -Path $ScrubberPath -ItemType Directory ;
-  }
-
-  try {
-    # Download het archief
-    Invoke-WebRequest -Uri $ArchiveUrl -OutFile $ArchivePath
-
-    # Uitpakken van het archief met het volledige pad naar 7z
-    & $7zPath x $ArchivePath -o"$ScrubberPath"
-
-    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $ScrubberPath"
-  }
-  catch {
-    Write-Host "Er is een fout opgetreden bij het downloaden en uitpakken van het archief: $_"
-  }
-  finally {
-    # Opruimen: Verwijder het gedownloade archief
-    Remove-Item -Path $ArchivePath -Force
-    Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
-    Expand-7zArchive -ArchiveUrl $ArchiveUrl -ScrubberPath $ScrubberPath -ScrubberArchive $ScrubberArchive
-    Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberFullPath "
-    Read-Host "Press Enter to continue..."
-    Remove-Item -Path $ScrubberFullPath -Force
-
-  }
+  Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
+  Get-OfficeScrubber -ArchiveUrl $ArchiveUrl -ScrubberPath $ScrubberPath -ScrubberArchive $ScrubberArchive
+  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberFullPath "
+  Read-Host "Press Enter to continue..."
+  Remove-Item -Path $ScrubberFullPath -Force
 }
 function Show-MainMenu {
   Invoke-Logo
