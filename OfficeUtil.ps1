@@ -157,11 +157,15 @@ function Process-MainMenu-Choice {
     )
 
     switch ($choice) {
-        'q', '0' {
+        'q' {
             Write-Host "Exiting..."
             exit
         }
-        '1' {
+        '0' {
+            Write-Host "Exiting..."
+            exit
+        }
+            '1' {
             Show-SubMenu1
         }
         '2' {
