@@ -3,3 +3,8 @@
 #===========================================================================
 
 # Invoke-WPFFormVariables
+
+# Toon het hoofdmenu
+Show-MainMenu
+
+Stop-Transcript

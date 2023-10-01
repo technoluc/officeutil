@@ -22,7 +22,8 @@ function Process-MainMenu-Choice {
             Invoke-Logo
             Write-Host " Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
             Run-MAS
-            Read-Host "Druk op Enter om terug te gaan naar het hoofdmenu..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
         default {
