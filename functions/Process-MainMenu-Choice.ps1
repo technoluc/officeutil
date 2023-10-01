@@ -4,6 +4,10 @@ function Process-MainMenu-Choice {
     )
 
     switch ($choice) {
+        'q' {
+            Write-Host "Afsluiten..."
+            exit
+        }
         '0' {
             Write-Host "Afsluiten..."
             exit
@@ -22,8 +26,10 @@ function Process-MainMenu-Choice {
             Show-MainMenu
         }
         default {
+            # Read-Host "Druk op Enter om door te gaan..."
             Write-Host "Ongeldige optie. Probeer opnieuw."
-            Read-Host "Druk op Enter om door te gaan..."
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
     }

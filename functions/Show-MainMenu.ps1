@@ -7,6 +7,9 @@ function Show-MainMenu {
   Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
   Write-Host "0. Exit" -ForegroundColor Red
   Write-Host ""
-  $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Selecteer een optie (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   Process-MainMenu-Choice $choice
 }
