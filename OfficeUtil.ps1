@@ -12,7 +12,7 @@
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/test/OfficeUtil.ps1"
 $OfficeUtilPath = "C:\OfficeUtil"
 
 $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
@@ -20,6 +20,8 @@ $odtPath = "C:\Program Files\OfficeDeploymentTool"
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
+
+
 
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
@@ -37,8 +39,8 @@ $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemov
 
 
 # Unattended Arguments for Office Installation
-$UnattendedArgs21 = "/configure `"$configuration21XML`""
-$UnattendedArgs365 = "/configure `"$configuration365XML`""
+$UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
+$UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
 
@@ -76,6 +78,45 @@ function Get-7ZipIfNeeded {
     }
   }
   
+function Get-OdtIfNeeded {
+  $OdtInstalled = Test-Path "$setupExePath"
+
+  
+  if (-not $OdtInstalled) {
+    $IntallerPresent = Test-Path "$odtInstallerPath"
+
+    if (-not $IntallerPresent) {
+
+      if (-not (Test-Path "$OfficeUtilPath")) {
+        New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
+        Write-Host "$OfficeUtilPath created"
+      }
+      if (-not (Test-Path "$odtPath")) {
+        New-Item -Path $odtPath -ItemType Directory -Force | Out-Null
+        Write-Host "$odtPath created"
+      }
+      $URL = $(Get-ODTUri)
+      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
+      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
+    }
+    Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
+    
+    # Check for successful installation
+    $OdtInstalled = Test-Path "$setupExePath" 
+    if ($OdtInstalled) {
+      Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
+    }
+    else {
+      Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
+    }
+  
+    # # Remove the temporary installation file
+    # Remove-Item -Path $InstallerPath -Force
+  } 
+  else {
+    Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
+  }
+}
 function Get-ODTUri {
   <#
       .SYNOPSIS
@@ -135,6 +176,63 @@ function Get-OfficeScrubber {
     }
   }
 }
+# Function to install Office 365 Business
+function Install-Office365 {
+  Get-OdtIfNeeded
+  if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
+    Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
+    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration365XMLPath
+  }
+  Write-Host -NoNewline "Install Microsoft Office 365 Business? ( Y / N ) "
+  $choice = [System.Console]::ReadKey().KeyChar
+  switch ($choice) {
+    'y' {
+      Write-Host "Installation started. Don't close this window" -ForegroundColor Green
+      Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
+      Write-Host "Installation completed." -ForegroundColor Green
+    }
+    'n' {
+      Write-Host "Exiting..."
+      # exit
+    }
+    default {
+      Write-Host -NoNewLine "Invalid option. Press any key to go back... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Install-Office365
+    }
+  }
+
+}
+
+# Function to install Office 2021 Pro Plus
+function Install-Office21 {
+  Get-OdtIfNeeded
+  if (-not (Test-Path -Path $configuration21XMLPath -PathType Leaf)) {
+    Write-Host "Downloading Office 2021 Pro Plus Configuration File..." -ForegroundColor Cyan
+    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration21XMLPath
+  }
+  Write-Host -NoNewline "Install Microsoft Office 2021 Pro Plus? ( Y / N ) "
+  $choice = [System.Console]::ReadKey().KeyChar
+  switch ($choice) {
+    'y' {
+      Write-Host "Installation started. Don't close this window" -ForegroundColor Green
+      Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
+      Write-Host "Installation completed." -ForegroundColor Green
+    }
+    'n' {
+      Write-Host "Exiting..."
+      # exit
+    }
+    default {
+      Write-Host -NoNewLine "Invalid option. Press any key to go back... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Install-Office21
+    }
+  }
+}
+
 Function Invoke-Logo {
     
     Clear-Host
@@ -233,7 +331,9 @@ function Process-SubMenu1-Choice {
     switch ($choice) {
         '1' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
+            Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
+            # Perform the steps for Suboption 1.1 here
+            Get-OdtIfNeeded
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
@@ -241,19 +341,30 @@ function Process-SubMenu1-Choice {
         }
         '2' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
+            Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
             # Perform the steps for Suboption 1.2 here
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office365
+            }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         '3' {
             Invoke-Logo
-            Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
-            # Perform the steps for Suboption 1.3 here
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office21
+            }
+            # else {
+            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
+            #     $x = [System.Console]::ReadKey().KeyChar
+            #     Show-MainMenu    
+            #     <# Action when all if and elseif conditions are false #>
+            # }
+            Write-Host -NoNewLine "Press any key to go back to Main Menu... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-MainMenu
         }
         'q' {
             Write-Host "Exiting..."
@@ -262,8 +373,7 @@ function Process-SubMenu1-Choice {
             Show-MainMenu
         }
         default {
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
@@ -293,7 +403,7 @@ function Process-SubMenu2-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "Run Office Scrubber" -ForegroundColor Cyan
+            Write-Host "Running Office Scrubber" -ForegroundColor Cyan
             Get-7ZipIfNeeded
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
@@ -308,8 +418,7 @@ function Process-SubMenu2-Choice {
             Show-MainMenu
         }
         default {
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
@@ -334,9 +443,9 @@ function Show-SubMenu1 {
   Invoke-Logo
   Write-Host "Install Microsoft Office" -ForegroundColor Green
   Write-Host ""
-  Write-Host "1. Install Microsoft Office 365 Business"
-  Write-Host "2. Install Microsoft Office 2021 Pro Plus"
-  Write-Host "3. Install Microsoft Office Deployment Tool"
+  Write-Host "1. Install Microsoft Office Deployment Tool"
+  Write-Host "2. Install Microsoft Office 365 Business"
+  Write-Host "3. Install Microsoft Office 2021 Pro Plus"
   Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
@@ -371,6 +480,18 @@ function Stop-Script {
   }
   Write-Host "Exiting... "
 
+}
+function Test-OfficeInstalled {
+  if (Test-Path "C:\Program Files\Microsoft Office") {
+    Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
+    Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
+    Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+
+    return $true
+  }
+  else {
+    return $false
+  }
 }
 #===========================================================================
 # Shows the form
