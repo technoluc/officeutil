@@ -3,5 +3,5 @@ Utility managing Office installations and Windows activation
 
 
 ```powershell
-irm https://github.com/technoluc/officeutil/raw/main/OfficeUtil.ps1 | iex
+irm https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1 | iex
 ``````

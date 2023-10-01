@@ -6,16 +6,16 @@ function Process-SubMenu2-Choice {
     switch ($choice) {
         '1' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with SaRa" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.1
+            Write-Host "Running Office Removal Tool with SaRa" -ForegroundColor Cyan
+            Invoke-OfficeRemovalTool
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         '2' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.2
+            Write-Host "Running Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
+            Invoke-OfficeRemovalTool -UseSetupRemoval
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
@@ -23,23 +23,21 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.3
+            Get-7ZipIfNeeded
+            Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         'q' {
-            Write-Host "Afsluiten..."
-            exit
+            Write-Host "Exiting..."
+            #exit
         }
         '0' {
             Show-MainMenu
         }
         default {
-            # Write-Host "Ongeldige optie. Probeer opnieuw."
-            # Read-Host "Druk op Enter om door te gaan..."
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
