@@ -34,6 +34,8 @@ function Get-OdtIfNeeded {
     # Remove-Item -Path $InstallerPath -Force
   } 
   else {
+
+    Write-Host "" 
     Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
   }
 }

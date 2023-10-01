@@ -6,8 +6,9 @@ function Install-Office365 {
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
     Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration365XMLPath
   }
-  Write-Host -NoNewline "Install Microsoft Office 365 Business? ( Y / N ) "
+  Write-Host -NoNewline "Install Microsoft Office 365 Business? ( Y / N ): "
   $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   switch ($choice) {
     'y' {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
@@ -16,11 +17,13 @@ function Install-Office365 {
     }
     'n' {
       Write-Host "Exiting..."
+      Show-SubMenu1
       # exit
     }
     default {
       Write-Host -NoNewLine "Invalid option. Press any key to go back... "
       $x = [System.Console]::ReadKey().KeyChar
+      Invoke-Logo
       Install-Office365
     }
   }
@@ -35,8 +38,9 @@ function Install-Office21 {
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
     Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration21XMLPath
   }
-  Write-Host -NoNewline "Install Microsoft Office 2021 Pro Plus? ( Y / N ) "
+  Write-Host -NoNewline "Install Microsoft Office 2021 Pro Plus? ( Y / N ): "
   $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
   switch ($choice) {
     'y' {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
@@ -45,11 +49,13 @@ function Install-Office21 {
     }
     'n' {
       Write-Host "Exiting..."
+      Show-SubMenu1
       # exit
     }
     default {
       Write-Host -NoNewLine "Invalid option. Press any key to go back... "
       $x = [System.Console]::ReadKey().KeyChar
+      Invoke-Logo
       Install-Office21
     }
   }

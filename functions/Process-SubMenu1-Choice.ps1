@@ -37,9 +37,9 @@ function Process-SubMenu1-Choice {
             #     Show-MainMenu    
             #     <# Action when all if and elseif conditions are false #>
             # }
-            Write-Host -NoNewLine "Press any key to go back to Main Menu... "
+            Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
+            Show-SubMenu1
         }
         'q' {
             Write-Host "Exiting..."
