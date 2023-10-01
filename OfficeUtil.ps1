@@ -12,7 +12,7 @@ Start-Transcript $ENV:TEMP\OfficeUtil.log
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/scripts/update/officeutil/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/update/OfficeUtil.ps1"
 $OfficeUtilPath = "C:\OfficeUtil"
 
 $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
