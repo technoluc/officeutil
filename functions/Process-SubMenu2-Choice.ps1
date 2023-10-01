@@ -22,7 +22,7 @@ function Process-SubMenu2-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host "Run Office Scrubber" -ForegroundColor Cyan
+            Write-Host "Running Office Scrubber" -ForegroundColor Cyan
             Get-7ZipIfNeeded
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
@@ -37,8 +37,7 @@ function Process-SubMenu2-Choice {
             Show-MainMenu
         }
         default {
-            Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Press any key to continue... "
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
