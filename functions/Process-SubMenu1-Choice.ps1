@@ -7,7 +7,7 @@ function Process-SubMenu1-Choice {
         '1' {
             Invoke-Logo
             Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.1
+            # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -15,7 +15,7 @@ function Process-SubMenu1-Choice {
         '2' {
             Invoke-Logo
             Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.2
+            # Perform the steps for Suboption 1.2 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -23,23 +23,20 @@ function Process-SubMenu1-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.3
+            # Perform the steps for Suboption 1.3 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         'q' {
-            Write-Host "Afsluiten..."
+            Write-Host "Exiting..."
             exit
         }
         '0' {
             Show-MainMenu
         }
         default {
-            # Write-Host "Ongeldige optie. Probeer opnieuw."
-            # Read-Host "Druk op Enter om door te gaan..."
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1

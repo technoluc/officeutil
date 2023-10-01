@@ -4,12 +4,8 @@ function Process-MainMenu-Choice {
     )
 
     switch ($choice) {
-        'q' {
-            Write-Host "Afsluiten..."
-            exit
-        }
-        '0' {
-            Write-Host "Afsluiten..."
+        'q', '0' {
+            Write-Host "Exiting..."
             exit
         }
         '1' {
@@ -20,15 +16,15 @@ function Process-MainMenu-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host " Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
+            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
             Run-MAS
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
         default {
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            # Read-Host "Press Enter to continue..."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu

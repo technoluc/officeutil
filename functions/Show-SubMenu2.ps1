@@ -8,7 +8,7 @@ function Show-SubMenu2 {
   Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
-  # $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""

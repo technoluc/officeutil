@@ -7,7 +7,7 @@ function Process-SubMenu2-Choice {
         '1' {
             Invoke-Logo
             Write-Host "Run Office Removal Tool with SaRa" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.1
+            # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
@@ -15,7 +15,7 @@ function Process-SubMenu2-Choice {
         '2' {
             Invoke-Logo
             Write-Host "Run Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.2
+            # Perform the steps for Suboption 1.2 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
@@ -24,25 +24,21 @@ function Process-SubMenu2-Choice {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
             Install-7ZipIfNeeded
-            # Get-OfficeScrubber
             Run-OfficeScrubber
-            # Voer hier de stappen uit voor Suboptie 1.3
+            # Perform the steps for Suboption 1.3 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         'q' {
-            Write-Host "Afsluiten..."
+            Write-Host "Exiting..."
             exit
         }
         '0' {
             Show-MainMenu
         }
         default {
-            # Write-Host "Ongeldige optie. Probeer opnieuw."
-            # Read-Host "Druk op Enter om door te gaan..."
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2

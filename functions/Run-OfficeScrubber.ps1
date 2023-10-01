@@ -1,7 +1,4 @@
 function Run-OfficeScrubber {
-  Write-Host "ScrubberBaseUrl: $ScrubberBaseUrl"
-  Write-Host "OfficeUtilPath: $OfficeUtilPath"
-  Write-Host "ScrubberArchiveName: $ScrubberArchiveName"
 
   Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
   try {

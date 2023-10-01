@@ -6,28 +6,28 @@ function Get-OfficeScrubber {
     [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
   )
 
-  # Combineer het pad naar het archief
+  # Combine the path to the archive
   $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
 
-  # Maak de map als deze nog niet bestaat
+  # Create the directory if it doesn't exist yet
   if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
     New-Item -Path $OfficeUtilPath -ItemType Directory ;
   }
 
   try {
-    # Download het archief
+    # Download the archive
     Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath
 
-    # Uitpakken van het archief met het volledige pad naar 7z
-    & $7zPath x $ScrubberArchivePath -o"$OfficeUtilPath"
+    # Extract the archive using the full path to 7z
+    & $7zPath x $ScrubberArchivePath -o"$OfficeUtilPath" -y | Out-Null
 
-    Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $OfficeUtilPath"
+    Write-Host "The archive has been successfully downloaded and extracted to: $OfficeUtilPath"
   }
   catch {
-    Write-Host "Er is een fout opgetreden bij het downloaden en uitpakken van het archief: $_"
+    Write-Host "An error occurred while downloading and extracting the archive: $_"
   }
   finally {
-    # Opruimen: Verwijder het gedownloade archief
+    # Clean up: Remove the downloaded archive
     Remove-Item -Path $ScrubberArchivePath -Force
   }
 }

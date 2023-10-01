@@ -97,7 +97,7 @@ function Get-OfficeScrubber {
     Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath
 
     # Uitpakken van het archief met het volledige pad naar 7z
-    & $7zPath x $ScrubberArchivePath -o"$OfficeUtilPath"
+    & $7zPath x $ScrubberArchivePath -y -o"$OfficeUtilPath" > nul
 
     Write-Host "Het archief is succesvol gedownload en uitgepakt naar: $OfficeUtilPath"
   }
