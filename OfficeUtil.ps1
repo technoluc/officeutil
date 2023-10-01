@@ -5,7 +5,136 @@
 ###                                                                                                          ###
 ################################################################################################################
 
-Start-Transcript $ENV:TEMP\testmenu.log -Append
+# Start-Transcript $ENV:TEMP\OfficeUtil.log -Append
+# Start-Transcript $ENV:TEMP\OfficeUtil.log
+
+##################################################
+#                 SET VARIABLES                  #
+##################################################
+
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$OfficeUtilPath = "C:\OfficeUtil"
+
+$odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
+$odtPath = "C:\Program Files\OfficeDeploymentTool"
+$setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
+$configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
+$configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
+
+# OfficeScrubber
+$ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
+$ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
+$ScrubberArchiveName = "OfficeScrubber_11.7z"
+$ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
+
+$ScrubberCmdName = "OfficeScrubber.cmd"
+$ScrubberCmdPath = Join-Path -Path $ScrubberPath -ChildPath $ScrubberCmdName
+
+# Office Removal Tool
+$OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-removal-tool/main/msoffice-removal-tool.ps1"
+$OfficeRemovalToolName = "msoffice-removal-tool.ps1"
+$OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalToolName
+
+
+# Unattended Arguments for Office Installation
+$UnattendedArgs21 = "/configure `"$configuration21XML`""
+$UnattendedArgs365 = "/configure `"$configuration365XML`""
+$odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
+
+
+# Check if script was run as Administrator, relaunch if not
+if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+  Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
+  Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
+  break
+}
+function Get-7ZipIfNeeded {
+    $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+  
+    if (-not $7ZipInstalled) {
+        Write-Host "7-Zip is not installed. Installing..."
+        $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
+        $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
+        
+        # Download the 7-Zip installer
+        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
+        
+        # Install 7-Zip with /S for silent installation
+        Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
+        
+        # Check for successful installation
+        $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+        if ($7ZipInstalled) {
+            Write-Host "7-Zip has been successfully installed."
+        } else {
+            Write-Host "Error: 7-Zip installation failed."
+        }
+  
+        # Remove the temporary installation file
+        Remove-Item -Path $InstallerPath -Force
+    } else {
+    }
+  }
+  
+function Get-ODTUri {
+  <#
+      .SYNOPSIS
+          Get Download URL of latest Office 365 Deployment Tool (ODT).
+      .NOTES
+          Author: Bronson Magnan
+          Twitter: @cit_bronson
+          Modified by: Marco Hofmann
+          Twitter: @xenadmin
+      .LINK
+          https://www.meinekleinefarm.net/
+  #>
+  [CmdletBinding()]
+  [OutputType([string])]
+  param ()
+
+  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
+  try {
+    $response = Invoke-WebRequest -UseBasicParsing -Uri $url -ErrorAction SilentlyContinue
+  }
+  catch {
+    Throw "Failed to connect to ODT: $url with error $_."
+    Break
+  }
+  finally {
+    $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
+    Write-Output $ODTUri.href
+  }
+}
+function Get-OfficeScrubber {
+  param (
+    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
+  )
+
+  # Combine the path to the archive
+  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
+
+  # Create the directory if it doesn't exist yet
+  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
+    New-Item -Path $ScrubberPath -ItemType Directory -Force | Out-Null
+  }
+
+  try {
+    # Download and extract the archive using 7-Zip
+    Invoke-WebRequest -Uri $ScrubberBaseUrl -OutFile $ScrubberArchivePath -UseBasicParsing
+    & $7zPath x $ScrubberArchivePath -o"$ScrubberPath" -y > $null
+
+    Write-Host "The archive has been successfully downloaded and extracted to: $ScrubberPath" -ForegroundColor Green
+  }
+  catch {
+    Write-Host "An error occurred while downloading and extracting the archive: $_" -ForegroundColor Red
+  }
+  finally {
+    # Clean up: Remove the downloaded archive
+    if (Test-Path -Path $ScrubberArchivePath -PathType Leaf) {
+      Remove-Item -Path $ScrubberArchivePath -Force
+    }
+  }
+}
 Function Invoke-Logo {
     
     Clear-Host
@@ -20,6 +149,45 @@ Function Invoke-Logo {
     Write-Host "                      TechnoLuc's Office Utility                    "
     Write-Host ""
 }
+function Invoke-MAS {
+  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
+  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
+}
+function Invoke-OfficeRemovalTool {
+    param (
+        [switch]$UseSetupRemoval
+    )
+
+    if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
+        New-Item -Path $OfficeUtilPath -ItemType Directory | Out-Null
+    }
+
+    if ($UseSetupRemoval.IsPresent) {
+        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot -UseSetupRemoval"
+    }
+    else {
+        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot"
+    }
+
+    Invoke-WebRequest -Uri $OfficeRemovalToolUrl -OutFile $OfficeRemovalToolPath
+    Invoke-Expression $Command
+}
+function Invoke-OfficeScrubber {
+
+  try {
+    Get-OfficeScrubber
+  }
+  catch {
+    Write-Host "Fout opgetreden: $_"
+  }
+  finally {
+    Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
+
+  }
+
+  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
+}
+
 function Process-MainMenu-Choice {
     param (
         [string]$choice
@@ -27,14 +195,14 @@ function Process-MainMenu-Choice {
 
     switch ($choice) {
         'q' {
-            Write-Host "Afsluiten..."
-            exit
+            Write-Host "Exiting..."
+            # exit
         }
         '0' {
-            Write-Host "Afsluiten..."
-            exit
+            Write-Host "Exiting..."
+            # exit
         }
-        '1' {
+            '1' {
             Show-SubMenu1
         }
         '2' {
@@ -42,15 +210,16 @@ function Process-MainMenu-Choice {
         }
         '3' {
             Invoke-Logo
-            Write-Host " Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
-            Run-MAS
-            Read-Host "Druk op Enter om terug te gaan naar het hoofdmenu..."
+            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
+            Invoke-MAS
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
         default {
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
-            Write-Host -NoNewLine "Press any key to continue... "
+            # Read-Host "Press Enter to continue..."
+            # Write-Host "Invalid option. Please try again."
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-MainMenu
         }
@@ -65,7 +234,7 @@ function Process-SubMenu1-Choice {
         '1' {
             Invoke-Logo
             Write-Host "Install Microsoft Office 365 Business" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.1
+            # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -73,7 +242,7 @@ function Process-SubMenu1-Choice {
         '2' {
             Invoke-Logo
             Write-Host "Install Microsoft Office 2021 Pro Plus" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.2
+            # Perform the steps for Suboption 1.2 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -81,23 +250,19 @@ function Process-SubMenu1-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Install Microsoft Office Deployment Tool" -ForegroundColor Green
-            # Voer hier de stappen uit voor Suboptie 1.3
+            # Perform the steps for Suboption 1.3 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
         }
         'q' {
-            Write-Host "Afsluiten..."
-            exit
+            Write-Host "Exiting..."
         }
         '0' {
             Show-MainMenu
         }
         default {
-            # Write-Host "Ongeldige optie. Probeer opnieuw."
-            # Read-Host "Druk op Enter om door te gaan..."
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -112,16 +277,16 @@ function Process-SubMenu2-Choice {
     switch ($choice) {
         '1' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with SaRa" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.1
+            Write-Host "Running Office Removal Tool with SaRa" -ForegroundColor Cyan
+            Invoke-OfficeRemovalTool
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         '2' {
             Invoke-Logo
-            Write-Host "Run Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.2
+            Write-Host "Running Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
+            Invoke-OfficeRemovalTool -UseSetupRemoval
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
@@ -129,43 +294,37 @@ function Process-SubMenu2-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Run Office Scrubber" -ForegroundColor Cyan
-            # Voer hier de stappen uit voor Suboptie 1.3
+            Get-7ZipIfNeeded
+            Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
         'q' {
-            Write-Host "Afsluiten..."
-            exit
+            Write-Host "Exiting..."
+            #exit
         }
         '0' {
             Show-MainMenu
         }
         default {
-            # Write-Host "Ongeldige optie. Probeer opnieuw."
-            # Read-Host "Druk op Enter om door te gaan..."
-            # Read-Host "Druk op Enter om door te gaan..."
-            Write-Host "Ongeldige optie. Probeer opnieuw."
+            Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu2
         }
     }
 }
-function Run-MAS {
-  # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
-  Invoke-RestMethod https://massgrave.dev/get | Invoke-Expression
-}
 function Show-MainMenu {
   Invoke-Logo
-  Write-Host "Hoofdmenu" -ForegroundColor Green
+  Write-Host "Main Menu" -ForegroundColor Green
   Write-Host ""
   Write-Host "1. Install Microsoft Office" -ForegroundColor Green
   Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
   Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
   Write-Host "0. Exit" -ForegroundColor Red
   Write-Host ""
-  # $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
@@ -181,7 +340,7 @@ function Show-SubMenu1 {
   Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
-  # $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
@@ -197,16 +356,48 @@ function Show-SubMenu2 {
   Write-Host "0. Main menu"
   Write-Host "Q. Quit"
   Write-Host ""
-  # $choice = Read-Host "Selecteer een optie (0-3)"
+  # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
   Process-SubMenu2-Choice $choice
+}
+function Stop-Script {
+  
+  # Clean up: Remove the downloaded archive
+  if (Test-Path -Path $OfficeUtilPath -PathType Container) {
+    Write-Host "Removing "$OfficeUtilPath"\* ..." -ForegroundColor Green
+    Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
+  }
+  Write-Host "Exiting... "
+
 }
 #===========================================================================
 # Shows the form
 #===========================================================================
 
 # Invoke-WPFFormVariables
+
 # Toon het hoofdmenu
 Show-MainMenu
+
+
+if (Test-Path -Path $OfficeUtilPath -PathType Container) {
+  Invoke-Logo
+  Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  switch ($choice) {
+    'f' {
+      # Clean up: Remove the downloaded archive
+      Stop-Script
+    }
+    'default' {
+    }
+  }
+  }
+
+
+# Stop-Script
+
+# Stop-Transcript
