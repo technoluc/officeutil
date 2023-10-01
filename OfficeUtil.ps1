@@ -21,6 +21,8 @@ $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
 
+
+
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
 $ScrubberBaseUrl = "https://github.com/abbodi1406/WHD/raw/master/scripts/OfficeScrubber_11.7z"
@@ -37,8 +39,8 @@ $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemov
 
 
 # Unattended Arguments for Office Installation
-$UnattendedArgs21 = "/configure `"$configuration21XML`""
-$UnattendedArgs365 = "/configure `"$configuration365XML`""
+$UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
+$UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
 
@@ -174,6 +176,51 @@ function Get-OfficeScrubber {
     }
   }
 }
+# Function to install Office 365 Business
+function Install-Office365 {
+  Get-OdtIfNeeded
+  if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
+    Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
+    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration365XMLPath
+  }
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+
+  Write-Host "Installation started. Don't close this window" -ForegroundColor Green
+  Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
+  Write-Host "Installation completed." -ForegroundColor Green
+}
+
+# Function to install Office 2021 Pro Plus
+function Install-Office21 {
+  Get-OdtIfNeeded
+  if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
+    Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
+    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration365XMLPath
+  }
+  Write-Host -NoNewline "Install Microsoft Office 2021 Pro Plus? ( Y / N ) "
+  $choice = [System.Console]::ReadKey().KeyChar
+  switch ($choice) {
+    'y' {
+      Write-Host "Installation started. Don't close this window" -ForegroundColor Green
+      Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
+      Write-Host "Installation completed." -ForegroundColor Green
+      }
+    'n' {
+      Write-Host "Exiting..."
+      # exit
+    }
+    default {
+      Write-Host -NoNewLine "Invalid option. Press any key to back... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Install-Office21
+    }
+  }
+  }
+
 Function Invoke-Logo {
     
     Clear-Host
@@ -284,6 +331,9 @@ function Process-SubMenu1-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
             # Perform the steps for Suboption 1.2 here
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office365
+            }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-SubMenu1
@@ -291,10 +341,18 @@ function Process-SubMenu1-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
-            # Perform the steps for Suboption 1.3 here
-            Write-Host -NoNewLine "Press any key to continue... "
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office21
+            }
+            # else {
+            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
+            #     $x = [System.Console]::ReadKey().KeyChar
+            #     Show-MainMenu    
+            #     <# Action when all if and elseif conditions are false #>
+            # }
+            Write-Host -NoNewLine "Press any key to go back to Main Menu... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-MainMenu
         }
         'q' {
             Write-Host "Exiting..."
@@ -410,6 +468,18 @@ function Stop-Script {
   }
   Write-Host "Exiting... "
 
+}
+function Test-OfficeInstalled {
+  if (Test-Path "C:\Program Files\Microsoft Office") {
+    Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
+    Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
+    Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+
+    return $true
+  }
+  else {
+    return $false
+  }
 }
 #===========================================================================
 # Shows the form
