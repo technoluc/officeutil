@@ -194,6 +194,7 @@ function Install-Office365 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
       Write-Host "Installation completed." -ForegroundColor Green
+      Show-MainMenu
     }
     'n' {
       Write-Host "Exiting..."
@@ -226,6 +227,7 @@ function Install-Office21 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
       Write-Host "Installation completed." -ForegroundColor Green
+      Show-MainMenu
     }
     'n' {
       Write-Host "Exiting..."
