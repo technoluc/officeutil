@@ -11,12 +11,10 @@ function Process-TLMainMenu-Choice {
             Write-Host "Exiting..."
         }
         '1' {
-            # Show-OfficeSMenu1
             Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod win.technoluc.nl | Invoke-Expression" -Wait
             Show-TLMainMenu
         }
         '2' {
-            # Show-OfficeSMenu2
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Clear-Host
@@ -24,7 +22,7 @@ function Process-TLMainMenu-Choice {
                 Show-TLMainMenu
                 }
             else {
-                Write-Output "BinUtil can't be run as Administrator..."
+                Read-Host "BinUtil can't be run as Administrator..."
                 break
             }
 
@@ -36,7 +34,7 @@ function Process-TLMainMenu-Choice {
                 Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
                 break
             }
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             # Read-Host "Press Enter to continue..."

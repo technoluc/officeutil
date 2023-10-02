@@ -1,4 +1,4 @@
-function Show-OfficeSMenu1 {
+function Show-OfficeInstallMenu {
   Invoke-Logo
   Write-Host "Install Microsoft Office" -ForegroundColor Green
   Write-Host ""
@@ -12,5 +12,5 @@ function Show-OfficeSMenu1 {
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-OfficeSMenu1-Choice $choice
+  Process-OfficeInstallMenu-Choice $choice
 }

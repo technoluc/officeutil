@@ -1,4 +1,4 @@
-function Process-OfficeSMenu2-Choice {
+function Process-OfficeRemoveMenu-Choice {
     param (
         [string]$choice
     )
@@ -10,7 +10,7 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeRemovalTool
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '2' {
             Invoke-Logo
@@ -18,7 +18,7 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeRemovalTool -UseSetupRemoval
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '3' {
             Invoke-Logo
@@ -27,19 +27,19 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         'q' {
             Write-Host "Exiting..."
             Stop-Script
         }
         '0' {
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
     }
 }

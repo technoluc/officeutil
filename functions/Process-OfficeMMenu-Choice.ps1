@@ -1,4 +1,4 @@
-function Process-OfficeMMenu-Choice {
+function Process-OfficeMainMenu-Choice {
     param (
         [string]$choice
     )
@@ -13,10 +13,10 @@ function Process-OfficeMMenu-Choice {
             # exit
         }
             '1' {
-            Show-OfficeSMenu1
+            Show-OfficeInstallMenu
         }
         '2' {
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '3' {
             Invoke-Logo
@@ -24,14 +24,14 @@ function Process-OfficeMMenu-Choice {
             Invoke-MAS
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             # Read-Host "Press Enter to continue..."
             # Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
     }
 }

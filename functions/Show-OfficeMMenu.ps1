@@ -1,4 +1,4 @@
-function Show-OfficeMMenu {
+function Show-OfficeMainMenu {
   Invoke-Logo
   Write-Host "Main Menu" -ForegroundColor Green
   Write-Host ""
@@ -13,5 +13,5 @@ function Show-OfficeMMenu {
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-OfficeMMenu-Choice $choice
+  Process-OfficeMainMenu-Choice $choice
 }

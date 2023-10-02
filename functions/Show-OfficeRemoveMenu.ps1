@@ -1,4 +1,4 @@
-function Show-OfficeSMenu2 {
+function Show-OfficeRemoveMenu {
   Invoke-Logo
   Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
   Write-Host ""
@@ -12,5 +12,5 @@ function Show-OfficeSMenu2 {
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-OfficeSMenu2-Choice $choice
+  Process-OfficeRemoveMenu-Choice $choice
 }

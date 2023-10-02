@@ -14,11 +14,11 @@ function Install-Office365 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
       Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMMenu
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-OfficeSMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
@@ -47,11 +47,11 @@ function Install-Office21 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
       Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMMenu
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-OfficeSMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
