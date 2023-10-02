@@ -5,7 +5,7 @@ function Show-TLMainMenu {
   Write-Host "1. Winutil: Install and Tweak Utility" -ForegroundColor Magenta
   Write-Host "2. BinUtil: Recycle Bin Themes" 
   Write-Host "3. OfficeUtil: Install/Remove/Activate Office & Windows" -ForegroundColor Cyan
-  Write-Host "Q/0. Exit" -ForegroundColor Red
+  Write-Host "Q. Exit" -ForegroundColor Red
   Write-Host ""
   # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
