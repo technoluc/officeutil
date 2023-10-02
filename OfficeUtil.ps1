@@ -5,18 +5,20 @@
 ###                                                                                                          ###
 ################################################################################################################
 
-# Start-Transcript $ENV:TEMP\OfficeUtil.log -Append
 # Start-Transcript $ENV:TEMP\OfficeUtil.log
 
 ##################################################
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/test/OfficeUtil.ps1"
+$WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
+$BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
+
 $OfficeUtilPath = "C:\OfficeUtil"
+$odtPath = "C:\Program Files\OfficeDeploymentTool"
 
 $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
-$odtPath = "C:\Program Files\OfficeDeploymentTool"
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
@@ -37,88 +39,17 @@ $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-re
 $OfficeRemovalToolName = "msoffice-removal-tool.ps1"
 $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalToolName
 
-
 # Unattended Arguments for Office Installation
 $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
-
-# Check if script was run as Administrator, relaunch if not
-if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-  Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
-  Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
-  break
-}
-function Get-7ZipIfNeeded {
-    $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
-  
-    if (-not $7ZipInstalled) {
-        Write-Host "7-Zip is not installed. Installing..."
-        $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
-        $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
-        
-        # Download the 7-Zip installer
-        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
-        
-        # Install 7-Zip with /S for silent installation
-        Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
-        
-        # Check for successful installation
-        $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
-        if ($7ZipInstalled) {
-            Write-Host "7-Zip has been successfully installed."
-        } else {
-            Write-Host "Error: 7-Zip installation failed."
-        }
-  
-        # Remove the temporary installation file
-        Remove-Item -Path $InstallerPath -Force
-    } else {
-    }
-  }
-  
-function Get-OdtIfNeeded {
-  $OdtInstalled = Test-Path "$setupExePath"
-
-  
-  if (-not $OdtInstalled) {
-    $IntallerPresent = Test-Path "$odtInstallerPath"
-
-    if (-not $IntallerPresent) {
-
-      if (-not (Test-Path "$OfficeUtilPath")) {
-        New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
-        Write-Host "$OfficeUtilPath created"
-      }
-      if (-not (Test-Path "$odtPath")) {
-        New-Item -Path $odtPath -ItemType Directory -Force | Out-Null
-        Write-Host "$odtPath created"
-      }
-      $URL = $(Get-ODTUri)
-      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
-      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
-    }
-    Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
-    
-    # Check for successful installation
-    $OdtInstalled = Test-Path "$setupExePath" 
-    if ($OdtInstalled) {
-      Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
-    }
-    else {
-      Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
-    }
-  
-    # # Remove the temporary installation file
-    # Remove-Item -Path $InstallerPath -Force
-  } 
-  else {
-
-    Write-Host "" 
-    Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
-  }
-}
+# # Check if script was run as Administrator, relaunch if not
+# if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+#   Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
+#   Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
+#   break
+# }
 function Get-ODTUri {
   <#
       .SYNOPSIS
@@ -178,9 +109,78 @@ function Get-OfficeScrubber {
     }
   }
 }
+function Install-7ZipIfNeeded {
+    $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+  
+    if (-not $7ZipInstalled) {
+        Write-Host "7-Zip is not installed. Installing..."
+        $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
+        $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
+        
+        # Download the 7-Zip installer
+        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
+        
+        # Install 7-Zip with /S for silent installation
+        Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
+        
+        # Check for successful installation
+        $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
+        if ($7ZipInstalled) {
+            Write-Host "7-Zip has been successfully installed."
+        } else {
+            Write-Host "Error: 7-Zip installation failed."
+        }
+  
+        # Remove the temporary installation file
+        Remove-Item -Path $InstallerPath -Force
+    } else {
+    }
+  }
+  
+function Install-OdtIfNeeded {
+  $OdtInstalled = Test-Path "$setupExePath"
+
+  
+  if (-not $OdtInstalled) {
+    $IntallerPresent = Test-Path "$odtInstallerPath"
+
+    if (-not $IntallerPresent) {
+
+      if (-not (Test-Path "$OfficeUtilPath")) {
+        New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
+        Write-Host "$OfficeUtilPath created"
+      }
+      if (-not (Test-Path "$odtPath")) {
+        New-Item -Path $odtPath -ItemType Directory -Force | Out-Null
+        Write-Host "$odtPath created"
+      }
+      $URL = $(Get-ODTUri)
+      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
+      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
+    }
+    Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
+    
+    # Check for successful installation
+    $OdtInstalled = Test-Path "$setupExePath" 
+    if ($OdtInstalled) {
+      Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
+    }
+    else {
+      Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
+    }
+  
+    # # Remove the temporary installation file
+    # Remove-Item -Path $InstallerPath -Force
+  } 
+  else {
+
+    Write-Host "" 
+    Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
+  }
+}
 # Function to install Office 365 Business
 function Install-Office365 {
-  Get-OdtIfNeeded
+  Install-OdtIfNeeded
   if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
     Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
@@ -194,14 +194,15 @@ function Install-Office365 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
       Write-Host "Installation completed." -ForegroundColor Green
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-SubMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
-      Write-Host -NoNewLine "Invalid option. Press any key to go back... "
+      Write-Host -NoNewLine "Invalid option. Press any key to try again... "
       $x = [System.Console]::ReadKey().KeyChar
       Invoke-Logo
       Install-Office365
@@ -212,7 +213,7 @@ function Install-Office365 {
 
 # Function to install Office 2021 Pro Plus
 function Install-Office21 {
-  Get-OdtIfNeeded
+  Install-OdtIfNeeded
   if (-not (Test-Path -Path $configuration21XMLPath -PathType Leaf)) {
     Write-Host "Downloading Office 2021 Pro Plus Configuration File..." -ForegroundColor Cyan
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
@@ -226,10 +227,11 @@ function Install-Office21 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
       Write-Host "Installation completed." -ForegroundColor Green
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-SubMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
@@ -294,44 +296,7 @@ function Invoke-OfficeScrubber {
   Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
 }
 
-function Process-MainMenu-Choice {
-    param (
-        [string]$choice
-    )
-
-    switch ($choice) {
-        'q' {
-            Write-Host "Exiting..."
-            # exit
-        }
-        '0' {
-            Write-Host "Exiting..."
-            # exit
-        }
-            '1' {
-            Show-SubMenu1
-        }
-        '2' {
-            Show-SubMenu2
-        }
-        '3' {
-            Invoke-Logo
-            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
-            Invoke-MAS
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
-        }
-        default {
-            # Read-Host "Press Enter to continue..."
-            # Write-Host "Invalid option. Please try again."
-            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
-        }
-    }
-}
-function Process-SubMenu1-Choice {
+function Process-OfficeInstallMenu-Choice {
     param (
         [string]$choice
     )
@@ -341,11 +306,11 @@ function Process-SubMenu1-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
             # Perform the steps for Suboption 1.1 here
-            Get-OdtIfNeeded
+            Install-OdtIfNeeded
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         '2' {
             Invoke-Logo
@@ -356,7 +321,7 @@ function Process-SubMenu1-Choice {
             }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         '3' {
             Invoke-Logo
@@ -367,27 +332,64 @@ function Process-SubMenu1-Choice {
             # else {
             #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
             #     $x = [System.Console]::ReadKey().KeyChar
-            #     Show-MainMenu    
+            #     Show-OfficeMainMenu    
             #     <# Action when all if and elseif conditions are false #>
             # }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         'q' {
             Write-Host "Exiting..."
         }
         '0' {
-            Show-MainMenu
+            Show-OfficeMainMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
     }
 }
-function Process-SubMenu2-Choice {
+function Process-OfficeMainMenu-Choice {
+    param (
+        [string]$choice
+    )
+
+    switch ($choice) {
+        'q' {
+            Write-Host "Exiting..."
+            Stop-Script
+        }
+        '0' {
+            Show-TLMainMenu
+            # exit
+        }
+            '1' {
+            Show-OfficeInstallMenu
+        }
+        '2' {
+            Show-OfficeRemoveMenu
+        }
+        '3' {
+            Invoke-Logo
+            Write-Host "Running Massgrave.dev Microsoft Activation Scripts" -ForegroundColor Cyan 
+            Invoke-MAS
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeMainMenu
+        }
+        default {
+            # Read-Host "Press Enter to continue..."
+            # Write-Host "Invalid option. Please try again."
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeMainMenu
+        }
+    }
+}
+function Process-OfficeRemoveMenu-Choice {
     param (
         [string]$choice
     )
@@ -399,7 +401,7 @@ function Process-SubMenu2-Choice {
             Invoke-OfficeRemovalTool
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu2
+            Show-OfficeRemoveMenu
         }
         '2' {
             Invoke-Logo
@@ -407,87 +409,180 @@ function Process-SubMenu2-Choice {
             Invoke-OfficeRemovalTool -UseSetupRemoval
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu2
+            Show-OfficeRemoveMenu
         }
         '3' {
             Invoke-Logo
             Write-Host "Running Office Scrubber" -ForegroundColor Cyan
-            Get-7ZipIfNeeded
+            Install-7ZipIfNeeded
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu2
+            Show-OfficeRemoveMenu
         }
         'q' {
             Write-Host "Exiting..."
-            #exit
+            Stop-Script
         }
         '0' {
-            Show-MainMenu
+            Show-OfficeMainMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu2
+            Show-OfficeRemoveMenu
         }
     }
 }
-function Show-MainMenu {
-  Invoke-Logo
-  Write-Host "Main Menu" -ForegroundColor Green
-  Write-Host ""
-  Write-Host "1. Install Microsoft Office" -ForegroundColor Green
-  Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
-  Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
-  Write-Host "0. Exit" -ForegroundColor Red
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-MainMenu-Choice $choice
+function Process-TLMainMenu-Choice {
+    param (
+        [string]$choice
+    )
+  
+    switch ($choice) {
+        'q' {
+            Write-Host "Exiting..."
+        }
+        '0' {
+            Write-Host "Exiting..."
+        }
+        '1' {
+            Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$WinUtilUrl`" | Invoke-Expression" -Wait
+            Show-TLMainMenu
+        }
+        '2' {
+            # Check if script was run as Administrator, relaunch if not
+            if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Clear-Host
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilUrl`" | Invoke-Expression" -Wait -NoNewWindow
+                Show-TLMainMenu
+                }
+            else {
+                Write-Host "BinUtil can't be run as Administrator..."
+                Write-Host "Re-run this command in a non-admin PowerShell window..."
+                Write-Host " irm `"$ScriptUrl`" | iex " -ForegroundColor Yellow
+                Read-Host "Press Enter to Exit..."
+                break
+            }
+
+        }
+        '3' {
+            # Check if script was run as Administrator, relaunch if not
+            if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
+                Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
+                break
+            }
+            Show-OfficeMainMenu
+        }
+        default {
+            # Read-Host "Press Enter to continue..."
+            # Write-Host "Invalid option. Please try again."
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-TLMainMenu
+        }
+    }
 }
-function Show-SubMenu1 {
+  
+function Show-OfficeInstallMenu {
   Invoke-Logo
   Write-Host "Install Microsoft Office" -ForegroundColor Green
   Write-Host ""
   Write-Host "1. Install Microsoft Office Deployment Tool"
   Write-Host "2. Install Microsoft Office 365 Business"
   Write-Host "3. Install Microsoft Office 2021 Pro Plus"
-  Write-Host "0. Main menu"
-  Write-Host "Q. Quit"
+  Write-Host "0. Main Office Menu"
+  Write-Host "Q. Quit" -ForegroundColor Red
   Write-Host ""
   # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-SubMenu1-Choice $choice
+  Process-OfficeInstallMenu-Choice $choice
 }
-function Show-SubMenu2 {
+function Show-OfficeMainMenu {
+  Invoke-Logo
+  Write-Host "Main Menu" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office" -ForegroundColor Green
+  Write-Host "2. Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host "3. Activate Microsoft Office / Windows" -ForegroundColor Cyan
+  Write-Host "0. Main Menu"
+  Write-Host "Q. Exit" -ForegroundColor Red
+
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-OfficeMainMenu-Choice $choice
+}
+function Show-OfficeRemoveMenu {
   Invoke-Logo
   Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
   Write-Host ""
   Write-Host "1. Run Office Removal Tool with SaRa"
   Write-Host "2. Run Office Removal Tool with Office365 Setup"
   Write-Host "3. Run Office Scrubber"
-  Write-Host "0. Main menu"
-  Write-Host "Q. Quit"
+  Write-Host "0. Main Office Menu"
+  Write-Host "Q. Quit" -ForegroundColor Red
   Write-Host ""
   # $choice = Read-Host "Select an option (0-3)"
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-SubMenu2-Choice $choice
+  Process-OfficeRemoveMenu-Choice $choice
+}
+function Show-TLMainMenu {
+  Invoke-Logo
+  Write-Host "Main Menu" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Winutil: Install and Tweak Utility" -ForegroundColor DarkGreen
+  Write-Host "2. BinUtil: Recycle Bin Themes" -ForegroundColor Magenta
+  Write-Host "3. OfficeUtil: Install/Remove/Activate Office & Windows" -ForegroundColor Cyan
+  Write-Host "Q. Exit" -ForegroundColor Red
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-TLMainMenu-Choice $choice
 }
 function Stop-Script {
   
-  # Clean up: Remove the downloaded archive
+  # Clean up: Remove the OfficeUtil folder
   if (Test-Path -Path $OfficeUtilPath -PathType Container) {
-    Write-Host "Removing "$OfficeUtilPath"\* ..." -ForegroundColor Green
-    Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
-  }
-  Write-Host "Exiting... "
+    Invoke-Logo
+    Write-Host ""
+    Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
+    $choice = [System.Console]::ReadKey().KeyChar
+    Write-Host ""
+    switch ($choice) {
+      'f' {
+        Write-Host "Removing "$OfficeUtilPath"\* ..." -ForegroundColor Green
+        Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
+        exit
+        }
+      'default' {
+        exit
+      }
+    }
+    }
+  
+}
 
+function Test-OfficeInstalled {
+  if (Test-Path "C:\Program Files\Microsoft Office") {
+    Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
+    Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
+    Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+
+    return $true
+  }
+  else {
+    return $false
+  }
 }
 function Test-OfficeInstalled {
   if (Test-Path "C:\Program Files\Microsoft Office") {
@@ -508,25 +603,9 @@ function Test-OfficeInstalled {
 # Invoke-WPFFormVariables
 
 # Toon het hoofdmenu
-Show-MainMenu
+Show-TLMainMenu
 
 
-if (Test-Path -Path $OfficeUtilPath -PathType Container) {
-  Invoke-Logo
-  Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  switch ($choice) {
-    'f' {
-      # Clean up: Remove the downloaded archive
-      Stop-Script
-    }
-    'default' {
-    }
-  }
-  }
-
-
-# Stop-Script
+Stop-Script
 
 # Stop-Transcript

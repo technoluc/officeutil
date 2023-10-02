@@ -1,4 +1,4 @@
-function Process-SubMenu1-Choice {
+function Process-OfficeInstallMenu-Choice {
     param (
         [string]$choice
     )
@@ -8,11 +8,11 @@ function Process-SubMenu1-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
             # Perform the steps for Suboption 1.1 here
-            Get-OdtIfNeeded
+            Install-OdtIfNeeded
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         '2' {
             Invoke-Logo
@@ -23,7 +23,7 @@ function Process-SubMenu1-Choice {
             }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         '3' {
             Invoke-Logo
@@ -34,23 +34,23 @@ function Process-SubMenu1-Choice {
             # else {
             #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
             #     $x = [System.Console]::ReadKey().KeyChar
-            #     Show-MainMenu    
+            #     Show-OfficeMainMenu    
             #     <# Action when all if and elseif conditions are false #>
             # }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
         'q' {
             Write-Host "Exiting..."
         }
         '0' {
-            Show-MainMenu
+            Show-OfficeMainMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeInstallMenu
         }
     }
 }
