@@ -1,4 +1,4 @@
-function Process-MainMenu-Choice {
+function Process-OfficeMMenu-Choice {
     param (
         [string]$choice
     )
@@ -6,17 +6,17 @@ function Process-MainMenu-Choice {
     switch ($choice) {
         'q' {
             Write-Host "Exiting..."
-            # exit
+            Stop-Script
         }
         '0' {
-            Write-Host "Exiting..."
+            Show-TLMainWindow
             # exit
         }
             '1' {
-            Show-SubMenu1
+            Show-OfficeSMenu1
         }
         '2' {
-            Show-SubMenu2
+            Show-OfficeSMenu2
         }
         '3' {
             Invoke-Logo
@@ -24,14 +24,14 @@ function Process-MainMenu-Choice {
             Invoke-MAS
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
+            Show-OfficeMMenu
         }
         default {
             # Read-Host "Press Enter to continue..."
             # Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-MainMenu
+            Show-OfficeMMenu
         }
     }
 }

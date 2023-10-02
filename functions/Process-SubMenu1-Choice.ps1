@@ -1,4 +1,4 @@
-function Process-SubMenu1-Choice {
+function Process-OfficeSMenu1-Choice {
     param (
         [string]$choice
     )
@@ -12,7 +12,7 @@ function Process-SubMenu1-Choice {
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeSMenu1
         }
         '2' {
             Invoke-Logo
@@ -23,7 +23,7 @@ function Process-SubMenu1-Choice {
             }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeSMenu1
         }
         '3' {
             Invoke-Logo
@@ -34,23 +34,23 @@ function Process-SubMenu1-Choice {
             # else {
             #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
             #     $x = [System.Console]::ReadKey().KeyChar
-            #     Show-MainMenu    
+            #     Show-OfficeMMenu    
             #     <# Action when all if and elseif conditions are false #>
             # }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeSMenu1
         }
         'q' {
             Write-Host "Exiting..."
         }
         '0' {
-            Show-MainMenu
+            Show-OfficeMMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-SubMenu1
+            Show-OfficeSMenu1
         }
     }
 }
