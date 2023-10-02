@@ -453,10 +453,17 @@ function Process-TLMainMenu-Choice {
         }
         '2' {
             # Show-OfficeSMenu2
-            Clear-Host
-            Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod https://github.com/technoluc/recycle-bin-themes/raw/test-exit/RecycleBinThemes.ps1 | Invoke-Expression" -Wait -NoNewWindow
-            # Invoke-WebRequest https://github.com/technoluc/recycle-bin-themes/raw/test-exit/RecycleBinThemes.ps1 -OutFile binutil.ps1; powershell -ExecutionPolicy Bypass .\binutil.ps1 
-            Show-TLMainMenu
+            # Check if script was run as Administrator, relaunch if not
+            if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Clear-Host
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod https://github.com/technoluc/recycle-bin-themes/raw/test-exit/RecycleBinThemes.ps1 | Invoke-Expression" -Wait -NoNewWindow
+                Show-TLMainMenu
+                }
+            else {
+                Write-Output "BinUtil can't be run as Administrator..."
+                break
+            }
+
         }
         '3' {
             # Check if script was run as Administrator, relaunch if not
