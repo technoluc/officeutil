@@ -194,11 +194,11 @@ function Install-Office365 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
       Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMMenu
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-OfficeSMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
@@ -227,11 +227,11 @@ function Install-Office21 {
       Write-Host "Installation started. Don't close this window" -ForegroundColor Green
       Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
       Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMMenu
+      Show-OfficeMainMenu
     }
     'n' {
       Write-Host "Exiting..."
-      Show-OfficeSMenu1
+      Show-OfficeInstallMenu
       # exit
     }
     default {
@@ -296,7 +296,63 @@ function Invoke-OfficeScrubber {
   Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
 }
 
-function Process-OfficeMMenu-Choice {
+function Process-OfficeInstallMenu-Choice {
+    param (
+        [string]$choice
+    )
+
+    switch ($choice) {
+        '1' {
+            Invoke-Logo
+            Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
+            # Perform the steps for Suboption 1.1 here
+            Get-OdtIfNeeded
+            # Perform the steps for Suboption 1.1 here
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeInstallMenu
+        }
+        '2' {
+            Invoke-Logo
+            Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
+            # Perform the steps for Suboption 1.2 here
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office365
+            }
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeInstallMenu
+        }
+        '3' {
+            Invoke-Logo
+            Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
+            if (-not (Test-OfficeInstalled)) {
+                Install-Office21
+            }
+            # else {
+            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
+            #     $x = [System.Console]::ReadKey().KeyChar
+            #     Show-OfficeMainMenu    
+            #     <# Action when all if and elseif conditions are false #>
+            # }
+            Write-Host -NoNewLine "Press any key to continue... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeInstallMenu
+        }
+        'q' {
+            Write-Host "Exiting..."
+        }
+        '0' {
+            Show-OfficeMainMenu
+        }
+        default {
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Show-OfficeInstallMenu
+        }
+    }
+}
+function Process-OfficeMainMenu-Choice {
     param (
         [string]$choice
     )
@@ -311,10 +367,10 @@ function Process-OfficeMMenu-Choice {
             # exit
         }
             '1' {
-            Show-OfficeSMenu1
+            Show-OfficeInstallMenu
         }
         '2' {
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '3' {
             Invoke-Logo
@@ -322,18 +378,18 @@ function Process-OfficeMMenu-Choice {
             Invoke-MAS
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             # Read-Host "Press Enter to continue..."
             # Write-Host "Invalid option. Please try again."
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
     }
 }
-function Process-OfficeSMenu2-Choice {
+function Process-OfficeRemoveMenu-Choice {
     param (
         [string]$choice
     )
@@ -345,7 +401,7 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeRemovalTool
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '2' {
             Invoke-Logo
@@ -353,7 +409,7 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeRemovalTool -UseSetupRemoval
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         '3' {
             Invoke-Logo
@@ -362,75 +418,19 @@ function Process-OfficeSMenu2-Choice {
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
+            Show-OfficeRemoveMenu
         }
         'q' {
             Write-Host "Exiting..."
             Stop-Script
         }
         '0' {
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             Write-Host -NoNewLine "Invalid option. Press any key to try again... "
             $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu2
-        }
-    }
-}
-function Process-OfficeSMenu1-Choice {
-    param (
-        [string]$choice
-    )
-
-    switch ($choice) {
-        '1' {
-            Invoke-Logo
-            Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
-            # Perform the steps for Suboption 1.1 here
-            Get-OdtIfNeeded
-            # Perform the steps for Suboption 1.1 here
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu1
-        }
-        '2' {
-            Invoke-Logo
-            Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
-            # Perform the steps for Suboption 1.2 here
-            if (-not (Test-OfficeInstalled)) {
-                Install-Office365
-            }
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu1
-        }
-        '3' {
-            Invoke-Logo
-            Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
-            if (-not (Test-OfficeInstalled)) {
-                Install-Office21
-            }
-            # else {
-            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
-            #     $x = [System.Console]::ReadKey().KeyChar
-            #     Show-OfficeMMenu    
-            #     <# Action when all if and elseif conditions are false #>
-            # }
-            Write-Host -NoNewLine "Press any key to continue... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu1
-        }
-        'q' {
-            Write-Host "Exiting..."
-        }
-        '0' {
-            Show-OfficeMMenu
-        }
-        default {
-            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
-            $x = [System.Console]::ReadKey().KeyChar
-            Show-OfficeSMenu1
+            Show-OfficeRemoveMenu
         }
     }
 }
@@ -447,12 +447,10 @@ function Process-TLMainMenu-Choice {
             Write-Host "Exiting..."
         }
         '1' {
-            # Show-OfficeSMenu1
             Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod win.technoluc.nl | Invoke-Expression" -Wait
             Show-TLMainMenu
         }
         '2' {
-            # Show-OfficeSMenu2
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Clear-Host
@@ -460,7 +458,7 @@ function Process-TLMainMenu-Choice {
                 Show-TLMainMenu
                 }
             else {
-                Write-Output "BinUtil can't be run as Administrator..."
+                Read-Host "BinUtil can't be run as Administrator..."
                 break
             }
 
@@ -472,7 +470,7 @@ function Process-TLMainMenu-Choice {
                 Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
                 break
             }
-            Show-OfficeMMenu
+            Show-OfficeMainMenu
         }
         default {
             # Read-Host "Press Enter to continue..."
@@ -484,7 +482,23 @@ function Process-TLMainMenu-Choice {
     }
 }
   
-function Show-OfficeMMenu {
+function Show-OfficeInstallMenu {
+  Invoke-Logo
+  Write-Host "Install Microsoft Office" -ForegroundColor Green
+  Write-Host ""
+  Write-Host "1. Install Microsoft Office Deployment Tool"
+  Write-Host "2. Install Microsoft Office 365 Business"
+  Write-Host "3. Install Microsoft Office 2021 Pro Plus"
+  Write-Host "0. Main Office Menu"
+  Write-Host "Q. Quit" -ForegroundColor Red
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-OfficeInstallMenu-Choice $choice
+}
+function Show-OfficeMainMenu {
   Invoke-Logo
   Write-Host "Main Menu" -ForegroundColor Green
   Write-Host ""
@@ -499,25 +513,9 @@ function Show-OfficeMMenu {
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-OfficeMMenu-Choice $choice
+  Process-OfficeMainMenu-Choice $choice
 }
-function Show-OfficeSMenu1 {
-  Invoke-Logo
-  Write-Host "Install Microsoft Office" -ForegroundColor Green
-  Write-Host ""
-  Write-Host "1. Install Microsoft Office Deployment Tool"
-  Write-Host "2. Install Microsoft Office 365 Business"
-  Write-Host "3. Install Microsoft Office 2021 Pro Plus"
-  Write-Host "0. Main Office Menu"
-  Write-Host "Q. Quit" -ForegroundColor Red
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-OfficeSMenu1-Choice $choice
-}
-function Show-OfficeSMenu2 {
+function Show-OfficeRemoveMenu {
   Invoke-Logo
   Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
   Write-Host ""
@@ -531,7 +529,7 @@ function Show-OfficeSMenu2 {
   Write-Host -NoNewline "Select option: "
   $choice = [System.Console]::ReadKey().KeyChar
   Write-Host ""
-  Process-OfficeSMenu2-Choice $choice
+  Process-OfficeRemoveMenu-Choice $choice
 }
 function Show-TLMainMenu {
   Invoke-Logo
