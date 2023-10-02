@@ -7,11 +7,11 @@
 
 # Start-Transcript $ENV:TEMP\OfficeUtil.log
 
-##################################################
-#                 SET VARIABLES                  #
-##################################################
+####################################################################################################
+#                                          SET VARIABLES                                           #
+####################################################################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/update/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/test/OfficeUtil.ps1"
 $WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
 $BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
 
@@ -573,15 +573,8 @@ function Test-OfficeInstalled {
 
   return $false
 }
-#===========================================================================
-# Shows the form
-#===========================================================================
-
-# Invoke-WPFFormVariables
-
-# Toon het hoofdmenu
+# Show Main Menu
 Show-TLMainMenu
-
 
 Stop-Script
 
