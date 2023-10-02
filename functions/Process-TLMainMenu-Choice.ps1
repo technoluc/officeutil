@@ -34,7 +34,7 @@ function Process-TLMainMenu-Choice {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
-                Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
+                Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$ScriptUrl`" | Invoke-Expression" 
                 break
             }
             Show-OfficeMainMenu
