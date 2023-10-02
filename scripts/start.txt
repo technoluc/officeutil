@@ -4,7 +4,7 @@
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/test/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/update/OfficeUtil.ps1"
 $WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
 $BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
 
