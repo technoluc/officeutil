@@ -11,7 +11,7 @@
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/update/OfficeUtil.ps1"
 $WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
 $BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
 
@@ -44,47 +44,6 @@ $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
-function Get-OdtIfNeeded {
-  $OdtInstalled = Test-Path "$setupExePath"
-
-  
-  if (-not $OdtInstalled) {
-    $IntallerPresent = Test-Path "$odtInstallerPath"
-
-    if (-not $IntallerPresent) {
-
-      if (-not (Test-Path "$OfficeUtilPath")) {
-        New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
-        Write-Host "$OfficeUtilPath created"
-      }
-      if (-not (Test-Path "$odtPath")) {
-        New-Item -Path $odtPath -ItemType Directory -Force | Out-Null
-        Write-Host "$odtPath created"
-      }
-      $URL = $(Get-ODTUri)
-      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
-      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
-    }
-    Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
-    
-    # Check for successful installation
-    $OdtInstalled = Test-Path "$setupExePath" 
-    if ($OdtInstalled) {
-      Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
-    }
-    else {
-      Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
-    }
-  
-    # # Remove the temporary installation file
-    # Remove-Item -Path $InstallerPath -Force
-  } 
-  else {
-
-    Write-Host "" 
-    Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
-  }
-}
 function Get-ODTUri {
   <#
       .SYNOPSIS
@@ -152,10 +111,8 @@ function Install-7ZipIfNeeded {
         $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
         $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
         
-        # Download the 7-Zip installer
-        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
-        
-        # Install 7-Zip with /S for silent installation
+        # Download and install 7-Zip with /S for silent installation
+        Download-File -url $InstallerUrl -outputPath $InstallerPath 
         Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
         
         # Check for successful installation
@@ -169,18 +126,15 @@ function Install-7ZipIfNeeded {
         # Remove the temporary installation file
         Remove-Item -Path $InstallerPath -Force
     } else {
+        Write-Host "7-Zip is already installed."
     }
-  }
-  
+}
 function Install-OdtIfNeeded {
   $OdtInstalled = Test-Path "$setupExePath"
 
-  
   if (-not $OdtInstalled) {
-    $IntallerPresent = Test-Path "$odtInstallerPath"
-
-    if (-not $IntallerPresent) {
-
+    if (-not (Test-Path "$odtInstallerPath")) {
+      
       if (-not (Test-Path "$OfficeUtilPath")) {
         New-Item -Path $OfficeUtilPath -ItemType Directory -Force | Out-Null
         Write-Host "$OfficeUtilPath created"
@@ -190,26 +144,22 @@ function Install-OdtIfNeeded {
         Write-Host "$odtPath created"
       }
       $URL = $(Get-ODTUri)
-      # $URL = "https://officecdn.microsoft.com/pr/wsus/setup.exe" # Backup URL
-      Invoke-WebRequest -Uri $URL -OutFile $odtInstallerPath
+      Download-File -url $URL -outputPath $odtInstallerPath
     }
     Start-Process -Wait $odtInstallerPath -ArgumentList $odtInstallerArgs
-    
+
     # Check for successful installation
-    $OdtInstalled = Test-Path "$setupExePath" 
+    $OdtInstalled = Test-Path "$setupExePath"
+
     if ($OdtInstalled) {
       Write-Host "Office Deployment Tool has been successfully installed." -ForegroundColor Green
     }
     else {
       Write-Host "Error: Office Deployment Tool installation failed." -ForegroundColor Red
     }
-  
-    # # Remove the temporary installation file
-    # Remove-Item -Path $InstallerPath -Force
-  } 
+  }
   else {
-
-    Write-Host "" 
+    Write-Host ""
     Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
   }
 }
@@ -301,21 +251,16 @@ function Invoke-OfficeRemovalTool {
     Invoke-Expression $Command
 }
 function Invoke-OfficeScrubber {
-
   try {
-    Get-OfficeScrubber
-  }
-  catch {
-    Write-Host "Fout opgetreden: $_"
-  }
-  finally {
-    Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
-
+      Get-OfficeScrubber
+  } catch {
+      Write-Host "Error occurred: $_" -ForegroundColor Red
+  } finally {
+      Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
   }
 
-  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
+  Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath"
 }
-
 function Download-File {
     param (
         [string]$url,
@@ -602,39 +547,31 @@ function Show-TLMainMenu {
   Process-TLMainMenu-Choice $choice
 }
 function Stop-Script {
-  
-  # Clean up: Remove the OfficeUtil folder
   if (Test-Path -Path $OfficeUtilPath -PathType Container) {
     Invoke-Logo
     Write-Host ""
     Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
     $choice = [System.Console]::ReadKey().KeyChar
     Write-Host ""
-    switch ($choice) {
-      'f' {
-        Write-Host "Removing "$OfficeUtilPath"\* ..." -ForegroundColor Green
-        Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
-        exit
-        }
-      'default' {
-        exit
-      }
+
+    if ($choice -eq 'f') {
+      Write-Host "Removing $OfficeUtilPath\* ..." -ForegroundColor Green
+      Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
     }
-    }
-  
+  }
+  exit
 }
-
 function Test-OfficeInstalled {
-  if (Test-Path "C:\Program Files\Microsoft Office") {
-    Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
-    Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
-    Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+  $officeInstallationPath = "C:\Program Files\Microsoft Office"
 
-    return $true
+  if (Test-Path $officeInstallationPath) {
+      Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
+      Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
+      Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+      return $true
   }
-  else {
-    return $false
-  }
+
+  return $false
 }
 #===========================================================================
 # Shows the form
