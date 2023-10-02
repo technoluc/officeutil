@@ -1,12 +1,5 @@
-#===========================================================================
-# Shows the form
-#===========================================================================
-
-# Invoke-WPFFormVariables
-
-# Toon het hoofdmenu
+# Show Main Menu
 Show-TLMainMenu
-
 
 Stop-Script
 
