@@ -9,7 +9,7 @@ function Process-OfficeMainMenu-Choice {
             Stop-Script
         }
         '0' {
-            Show-TLMainWindow
+            Show-TLMainMenu
             # exit
         }
             '1' {

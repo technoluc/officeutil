@@ -1,6 +1,6 @@
 # Function to install Office 365 Business
 function Install-Office365 {
-  Get-OdtIfNeeded
+  Install-OdtIfNeeded
   if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
     Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
@@ -33,7 +33,7 @@ function Install-Office365 {
 
 # Function to install Office 2021 Pro Plus
 function Install-Office21 {
-  Get-OdtIfNeeded
+  Install-OdtIfNeeded
   if (-not (Test-Path -Path $configuration21XMLPath -PathType Leaf)) {
     Write-Host "Downloading Office 2021 Pro Plus Configuration File..." -ForegroundColor Cyan
     $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"

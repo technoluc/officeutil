@@ -1,4 +1,3 @@
-# Start-Transcript $ENV:TEMP\OfficeUtil.log -Append
 # Start-Transcript $ENV:TEMP\OfficeUtil.log
 
 ##################################################
@@ -6,15 +5,16 @@
 ##################################################
 
 $ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/test/OfficeUtil.ps1"
+$WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
+$BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
+
 $OfficeUtilPath = "C:\OfficeUtil"
+$odtPath = "C:\Program Files\OfficeDeploymentTool"
 
 $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe"
-$odtPath = "C:\Program Files\OfficeDeploymentTool"
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
-
-
 
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
@@ -30,12 +30,10 @@ $OfficeRemovalToolUrl = "https://raw.githubusercontent.com/technoluc/msoffice-re
 $OfficeRemovalToolName = "msoffice-removal-tool.ps1"
 $OfficeRemovalToolPath = Join-Path -Path $OfficeUtilPath -ChildPath $OfficeRemovalToolName
 
-
 # Unattended Arguments for Office Installation
 $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
-
 
 # # Check if script was run as Administrator, relaunch if not
 # if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {

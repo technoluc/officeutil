@@ -8,7 +8,7 @@ function Process-OfficeInstallMenu-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
             # Perform the steps for Suboption 1.1 here
-            Get-OdtIfNeeded
+            Install-OdtIfNeeded
             # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar

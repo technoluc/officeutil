@@ -1,4 +1,4 @@
-function Get-OdtIfNeeded {
+function Install-OdtIfNeeded {
   $OdtInstalled = Test-Path "$setupExePath"
 
   

@@ -23,7 +23,7 @@ function Process-OfficeRemoveMenu-Choice {
         '3' {
             Invoke-Logo
             Write-Host "Running Office Scrubber" -ForegroundColor Cyan
-            Get-7ZipIfNeeded
+            Install-7ZipIfNeeded
             Invoke-OfficeScrubber
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
