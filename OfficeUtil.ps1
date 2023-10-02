@@ -11,7 +11,7 @@
 #                 SET VARIABLES                  #
 ##################################################
 
-$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/update/OfficeUtil.ps1"
+$ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
 $WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
 $BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
 
@@ -511,7 +511,7 @@ function Process-TLMainMenu-Choice {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
-                Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
+                Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$ScriptUrl`" | Invoke-Expression" 
                 break
             }
             Show-OfficeMainMenu
