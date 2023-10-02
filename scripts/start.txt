@@ -15,8 +15,8 @@ $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
-
-
+$configuration21XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
+$configuration365XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
 
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
@@ -37,9 +37,3 @@ $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
-# # Check if script was run as Administrator, relaunch if not
-# if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-#   Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
-#   Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
-#   break
-# }
