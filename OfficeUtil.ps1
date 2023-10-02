@@ -22,8 +22,8 @@ $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
-
-
+$configuration21XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
+$configuration365XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
 
 # OfficeScrubber
 $ScrubberPath = Join-Path -Path $OfficeUtilPath -ChildPath "OfficeScrubber"
@@ -44,12 +44,6 @@ $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
-# # Check if script was run as Administrator, relaunch if not
-# if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-#   Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
-#   Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -UseBasicParsing `"$ScriptUrl`" | Invoke-Expression" 
-#   break
-# }
 function Get-OdtIfNeeded {
   $OdtInstalled = Test-Path "$setupExePath"
 
@@ -219,71 +213,56 @@ function Install-OdtIfNeeded {
     Write-Host "Office Deployment Tool is already installed." -ForegroundColor Green
   }
 }
-# Function to install Office 365 Business
-function Install-Office365 {
-  Install-OdtIfNeeded
-  if (-not (Test-Path -Path $configuration365XMLPath -PathType Leaf)) {
-    Write-Host "Downloading Office 365 Business Configuration File..." -ForegroundColor Cyan
-    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration365XMLPath
-  }
-  Write-Host -NoNewline "Install Microsoft Office 365 Business? ( Y / N ): "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  switch ($choice) {
-    'y' {
-      Write-Host "Installation started. Don't close this window" -ForegroundColor Green
-      Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs365"
-      Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMainMenu
-    }
-    'n' {
-      Write-Host "Exiting..."
-      Show-OfficeInstallMenu
-      # exit
-    }
-    default {
-      Write-Host -NoNewLine "Invalid option. Press any key to try again... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Invoke-Logo
-      Install-Office365
-    }
-  }
+function Install-Office {
+    param (
+        [string]$product
+    )
 
+    Install-OdtIfNeeded
+
+    if ($product -eq "Office 365 Business") {
+        $configXMLPath = $configuration365XMLPath
+        $downloadURL = $configuration365XMLUrl
+        $unattendedArgs = $UnattendedArgs365
+    }
+    elseif ($product -eq "Office 2021 Pro Plus") {
+        $configXMLPath = $configuration21XMLPath
+        $downloadURL = $configuration21XMLUrl
+        $unattendedArgs = $UnattendedArgs21
+    }
+    else {
+        Write-Host "Invalid product selection."
+        return
+    }
+
+    if (-not (Test-Path -Path $configXMLPath -PathType Leaf)) {
+        Write-Host "Downloading $product Configuration File..." -ForegroundColor Cyan
+        Download-File -url $downloadURL -outputPath $configXMLPath
+    }
+
+    Write-Host -NoNewline "Install Microsoft $product? ( Y / N ): "
+    $choice = [System.Console]::ReadKey().KeyChar
+    Write-Host ""
+
+    switch ($choice) {
+        'y' {
+            Write-Host "Installation started. Don't close this window" -ForegroundColor Green
+            Start-Process -Wait $setupExePath -ArgumentList "$unattendedArgs"
+            Write-Host "Installation of Microsoft $product completed." -ForegroundColor Green
+            Show-OfficeMainMenu
+        }
+        'n' {
+            Write-Host "Exiting..."
+            Show-OfficeInstallMenu
+        }
+        default {
+            Write-Host -NoNewLine "Invalid option. Press any key to try again... "
+            $x = [System.Console]::ReadKey().KeyChar
+            Invoke-Logo
+            Show-OfficeInstallMenu
+        }
+    }
 }
-
-# Function to install Office 2021 Pro Plus
-function Install-Office21 {
-  Install-OdtIfNeeded
-  if (-not (Test-Path -Path $configuration21XMLPath -PathType Leaf)) {
-    Write-Host "Downloading Office 2021 Pro Plus Configuration File..." -ForegroundColor Cyan
-    $downloadUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
-    Invoke-WebRequest -Uri $downloadUrl -OutFile $configuration21XMLPath
-  }
-  Write-Host -NoNewline "Install Microsoft Office 2021 Pro Plus? ( Y / N ): "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  switch ($choice) {
-    'y' {
-      Write-Host "Installation started. Don't close this window" -ForegroundColor Green
-      Start-Process -Wait $setupExePath -ArgumentList "$UnattendedArgs21"
-      Write-Host "Installation completed." -ForegroundColor Green
-      Show-OfficeMainMenu
-    }
-    'n' {
-      Write-Host "Exiting..."
-      Show-OfficeInstallMenu
-      # exit
-    }
-    default {
-      Write-Host -NoNewLine "Invalid option. Press any key to go back... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Invoke-Logo
-      Install-Office21
-    }
-  }
-}
-
 Function Invoke-Logo {
     
     Clear-Host
@@ -337,6 +316,47 @@ function Invoke-OfficeScrubber {
   Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath "
 }
 
+function Download-File {
+    param (
+        [string]$url,
+        [string]$outputPath
+    )
+
+    try {
+        Invoke-WebRequest -Uri $url -OutFile $outputPath -UseBasicParsing
+    }
+    catch {
+        Write-Host "Failed to download $url with error: $_"
+    }
+}
+
+
+function Ensure-Directory {
+    param (
+        [string]$path
+    )
+
+    if (-not (Test-Path -Path $path -PathType Container)) {
+        New-Item -Path $path -ItemType Directory -Force | Out-Null
+    }
+}
+
+
+function Install-Software {
+    param (
+        [string]$url,
+        [string]$installArgs
+    )
+
+    Ensure-Directory $OfficeUtilPath
+
+    if (-not (Test-Path -Path $OfficeUtilPath)) {
+        Download-File -url $url -outputPath $OfficeUtilPath
+    }
+  
+    Start-Process -Wait $OfficeUtilPath -ArgumentList $installArgs
+}
+
 function Process-OfficeInstallMenu-Choice {
     param (
         [string]$choice
@@ -346,9 +366,7 @@ function Process-OfficeInstallMenu-Choice {
         '1' {
             Invoke-Logo
             Write-Host "Installing Microsoft Office Deployment Tool" -ForegroundColor Green
-            # Perform the steps for Suboption 1.1 here
             Install-OdtIfNeeded
-            # Perform the steps for Suboption 1.1 here
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-OfficeInstallMenu
@@ -356,9 +374,8 @@ function Process-OfficeInstallMenu-Choice {
         '2' {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 365 Business" -ForegroundColor Green
-            # Perform the steps for Suboption 1.2 here
             if (-not (Test-OfficeInstalled)) {
-                Install-Office365
+                Install-Office -product "Office 365 Business"
             }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
@@ -368,14 +385,8 @@ function Process-OfficeInstallMenu-Choice {
             Invoke-Logo
             Write-Host "Installing Microsoft Office 2021 Pro Plus" -ForegroundColor Green
             if (-not (Test-OfficeInstalled)) {
-                Install-Office21
+                Install-Office -product "Office 2021 Pro Plus"
             }
-            # else {
-            #     Write-Host -NoNewLine "Press any key to go back to Main Menu "
-            #     $x = [System.Console]::ReadKey().KeyChar
-            #     Show-OfficeMainMenu    
-            #     <# Action when all if and elseif conditions are false #>
-            # }
             Write-Host -NoNewLine "Press any key to continue... "
             $x = [System.Console]::ReadKey().KeyChar
             Show-OfficeInstallMenu
