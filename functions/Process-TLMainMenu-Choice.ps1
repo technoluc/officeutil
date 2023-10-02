@@ -23,9 +23,8 @@ function Process-TLMainMenu-Choice {
                 }
             else {
                 Write-Host "BinUtil can't be run as Administrator..."
-                Write-Host "Re-run this command in a non-admin PowerShell window..."
-                Write-Host " irm `"$ScriptUrl`" | iex " -ForegroundColor Yellow
-                Read-Host "Press Enter to Exit..."
+                Write-Host "Re-running this script in a non-admin PowerShell window..."
+                Read-Host "Press Enter to continue..."
                 runas /trustlevel:0x20000 "powershell -Command Invoke-Expression (Invoke-RestMethod -Uri $BinUtilUrl)"
                 break
             }
