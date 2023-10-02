@@ -6,10 +6,8 @@ function Install-7ZipIfNeeded {
         $InstallerUrl = "https://www.7-zip.org/a/7z2301-x64.exe"
         $InstallerPath = Join-Path -Path $env:TEMP -ChildPath "7zInstaller.exe"
         
-        # Download the 7-Zip installer
-        Invoke-WebRequest -Uri $InstallerUrl -OutFile $InstallerPath -UseBasicParsing
-        
-        # Install 7-Zip with /S for silent installation
+        # Download and install 7-Zip with /S for silent installation
+        Download-File -url $InstallerUrl -outputPath $InstallerPath 
         Start-Process -FilePath $InstallerPath -ArgumentList "/S" -Wait
         
         # Check for successful installation
@@ -23,6 +21,6 @@ function Install-7ZipIfNeeded {
         # Remove the temporary installation file
         Remove-Item -Path $InstallerPath -Force
     } else {
+        Write-Host "7-Zip is already installed."
     }
-  }
-  
+}
