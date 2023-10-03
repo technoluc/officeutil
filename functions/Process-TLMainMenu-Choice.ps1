@@ -26,7 +26,7 @@ function Process-TLMainMenu-Choice {
                 Write-Host "Re-running this script in a non-admin PowerShell window..."
                 Read-Host "Press Enter to continue..."
                 runas /trustlevel:0x20000 "powershell -Command Invoke-Expression (Invoke-RestMethod -Uri $BinUtilUrl)"
-                break
+                # break
             }
 
         }
