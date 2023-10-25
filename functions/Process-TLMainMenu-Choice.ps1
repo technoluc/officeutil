@@ -18,7 +18,7 @@ function Process-TLMainMenu-Choice {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Clear-Host
-                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilUrl`" | Invoke-Expression" -Wait -NoNewWindow
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilCLIUrl`" | Invoke-Expression" -Wait -NoNewWindow
                 Show-TLMainMenu
                 }
             else {
@@ -31,6 +31,22 @@ function Process-TLMainMenu-Choice {
 
         }
         '3' {
+            # Check if script was run as Administrator, relaunch if not
+            if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Clear-Host
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilGUIUrl`" | Invoke-Expression" -Wait -NoNewWindow
+                Show-TLMainMenu
+                }
+            else {
+                Write-Host "BinUtil can't be run as Administrator..."
+                Write-Host "Re-run this command in a non-admin PowerShell window..."
+                Write-Host " irm `"$ScriptUrl`" | iex " -ForegroundColor Yellow
+                Read-Host "Press Enter to Exit..."
+                break
+            }
+
+        }
+        '4' {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
