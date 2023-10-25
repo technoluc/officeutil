@@ -13,7 +13,8 @@
 
 $ScriptUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
 $WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
-$BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
+$BinUtilCLIUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
+$BinUtilGUIUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/GUI/theme.ps1"
 
 $OfficeUtilPath = "C:\OfficeUtil"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
@@ -495,7 +496,7 @@ function Process-TLMainMenu-Choice {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Clear-Host
-                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilUrl`" | Invoke-Expression" -Wait -NoNewWindow
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilCLIUrl`" | Invoke-Expression" -Wait -NoNewWindow
                 Show-TLMainMenu
                 }
             else {
@@ -508,6 +509,22 @@ function Process-TLMainMenu-Choice {
 
         }
         '3' {
+            # Check if script was run as Administrator, relaunch if not
+            if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+                Clear-Host
+                Start-Process -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$BinUtilGUIUrl`" | Invoke-Expression" -Wait -NoNewWindow
+                Show-TLMainMenu
+                }
+            else {
+                Write-Host "BinUtil can't be run as Administrator..."
+                Write-Host "Re-run this command in a non-admin PowerShell window..."
+                Write-Host " irm `"$ScriptUrl`" | iex " -ForegroundColor Yellow
+                Read-Host "Press Enter to Exit..."
+                break
+            }
+
+        }
+        '4' {
             # Check if script was run as Administrator, relaunch if not
             if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
                 Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
@@ -580,8 +597,9 @@ function Show-TLMainMenu {
   Write-Host "Main Menu" -ForegroundColor Green
   Write-Host ""
   Write-Host "1. Winutil: Install and Tweak Utility" -ForegroundColor DarkGreen
-  Write-Host "2. BinUtil: Recycle Bin Themes" -ForegroundColor Magenta
-  Write-Host "3. OfficeUtil: Install/Remove/Activate Office & Windows" -ForegroundColor Cyan
+  Write-Host "2. BinUtil: Recycle Bin Themes (CLI)" -ForegroundColor Magenta
+  Write-Host "3. BinUtil: Recycle Bin Themes (GUI)" -ForegroundColor Magenta
+  Write-Host "4. OfficeUtil: Install/Remove/Activate Office & Windows" -ForegroundColor Cyan
   Write-Host "Q. Exit" -ForegroundColor Red
   Write-Host ""
   # $choice = Read-Host "Select an option (0-3)"
