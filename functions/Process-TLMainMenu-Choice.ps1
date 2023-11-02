@@ -42,7 +42,7 @@ function Process-TLMainMenu-Choice {
                 Write-Host "Re-run this command in a non-admin PowerShell window..."
                 Write-Host " irm `"$ScriptUrl`" | iex " -ForegroundColor Yellow
                 Read-Host "Press Enter to Exit..."
-                runas /trustlevel:0x20000 "powershel -Command Invoke-Expression (Invoke-RestMethod -Uri $BinUtilGUIUrl)"
+                runas /trustlevel:0x20000 "powershell -Command Invoke-Expression (Invoke-RestMethod -Uri $BinUtilGUIUrl)"
                 break
             }
 
