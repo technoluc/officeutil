@@ -46,132 +46,78 @@ $UnattendedArgs21 = "/configure `"$configuration21XMLPath`""
 $UnattendedArgs365 = "/configure `"$configuration365XMLPath`""
 $odtInstallerArgs = "/extract:`"c:\Program Files\OfficeDeploymentTool`" /quiet"
 
-function Invoke-OfficeRemovalTool {
-    param (
-        [switch]$UseSetupRemoval
-    )
-
-    if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
-        New-Item -Path $OfficeUtilPath -ItemType Directory | Out-Null
-    }
-
-    if ($UseSetupRemoval.IsPresent) {
-        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot -UseSetupRemoval"
-    }
-    else {
-        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot"
-    }
-
-    Invoke-WebRequest -Uri $OfficeRemovalToolUrl -OutFile $OfficeRemovalToolPath
-    Invoke-Expression $Command
-}
-
-function Invoke-OfficeScrubber {
-    try {
-        Extract-OfficeScrubber
-    }
-    catch {
-        Write-Host "Error occurred: $_" -ForegroundColor Red
-    }
-    finally {
-        Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
-    }
-
-    Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath"
-}
-
-function Invoke-MAS {
-    # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
-    Invoke-RestMethod $MASUrl | Invoke-Expression
-}
-
-function Test-OfficeInstalled {
-    $officeInstallationPath = "C:\Program Files\Microsoft Office"
-    if (Test-Path $officeInstallationPath) {
-        Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
-        Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
-        Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
-        return $true
-    }
-    return $false
-}
-function Stop-Script {
-  if (Test-Path -Path $OfficeUtilPath -PathType Container) {
-    Invoke-Logo
-    Write-Host ""
-    Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
-    $choice = [System.Console]::ReadKey().KeyChar
-    Write-Host ""
-
-    if ($choice -eq 'f') {
-      Write-Host "Removing $OfficeUtilPath\* ..." -ForegroundColor Green
-      Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
-    }
-  }
-  exit
-}
-function Show-OfficeRemoveMenu {
-  Invoke-Logo
-  Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
-  Write-Host ""
-  Write-Host "1. Run Office Removal Tool with SaRa"
-  Write-Host "2. Run Office Removal Tool with Office365 Setup"
-  Write-Host "3. Run Office Scrubber"
-  Write-Host "0. Main Office Menu"
-  Write-Host "Q. Quit" -ForegroundColor Red
-  Write-Host ""
-  # $choice = Read-Host "Select an option (0-3)"
-  Write-Host -NoNewline "Select option: "
-  $choice = [System.Console]::ReadKey().KeyChar
-  Write-Host ""
-  Process-OfficeRemoveMenu-Choice $choice
-}
-
-function Process-OfficeRemoveMenu-Choice {
+function Download-File {
   param (
-    [string]$choice
+      [string]$url,
+      [string]$outputPath
   )
 
-  switch ($choice) {
-    '1' {
-      Invoke-Logo
-      Write-Host "Running Office Removal Tool with SaRa" -ForegroundColor Cyan
-      Invoke-OfficeRemovalTool
-      Write-Host -NoNewLine "Press any key to continue... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Show-OfficeRemoveMenu
-    }
-    '2' {
-      Invoke-Logo
-      Write-Host "Running Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
-      Invoke-OfficeRemovalTool -UseSetupRemoval
-      Write-Host -NoNewLine "Press any key to continue... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Show-OfficeRemoveMenu
-    }
-    '3' {
-      Invoke-Logo
-      Write-Host "Running Office Scrubber" -ForegroundColor Cyan
-      Install-7ZipIfNeeded
-      Invoke-OfficeScrubber
-      Write-Host -NoNewLine "Press any key to continue... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Show-OfficeRemoveMenu
-    }
-    'q' {
-      Write-Host "Exiting..."
-      Stop-Script
-    }
-    '0' {
-      Show-OfficeMainMenu
-    }
-    default {
-      Write-Host -NoNewLine "Invalid option. Press any key to try again... "
-      $x = [System.Console]::ReadKey().KeyChar
-      Show-OfficeRemoveMenu
+  try {
+      Invoke-WebRequest -Uri $url -OutFile $outputPath -UseBasicParsing
+  }
+  catch {
+      Write-Host "Failed to download $url with error: $_"
+  }
+}
+
+function Get-ODTUri {
+  [CmdletBinding()]
+  [OutputType([string])]
+  param ()
+
+  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
+
+  try {
+      $response = Invoke-WebRequest -UseBasicParsing -Uri $url
+      $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
+      if ($ODTUri) {
+          return $ODTUri.href
+      }
+      else {
+          throw "Failed to retrieve ODT download URL."
+      }
+  }
+  catch {
+      throw "Failed to connect to ODT: $url with error $_."
+  }
+}
+
+function Download-OfficeScrubber{
+  Download-File -url $ScrubberBaseUrl -outputPath $ScrubberArchivePath
+}
+
+
+function Extract-OfficeScrubber {
+  param (
+    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
+  )
+
+  # Combine the path to the archive
+  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
+
+  # Create the directory if it doesn't exist yet
+  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
+    New-Item -Path $ScrubberPath -ItemType Directory -Force | Out-Null
+  }
+
+  try {
+    # Download and extract the archive using 7-Zip
+    Download-OfficeScrubber
+    & $7zPath x $ScrubberArchivePath -o"$ScrubberPath" -y > $null
+
+    Write-Host "The archive has been successfully downloaded and extracted to: $ScrubberPath" -ForegroundColor Green
+  }
+  catch {
+    Write-Host "An error occurred while downloading and extracting the archive: $_" -ForegroundColor Red
+  }
+  finally {
+    # Clean up: Remove the downloaded archive
+    if (Test-Path -Path $ScrubberArchivePath -PathType Leaf) {
+      Remove-Item -Path $ScrubberArchivePath -Force
     }
   }
 }
+
 function Install-7ZipIfNeeded {
   $7ZipInstalled = Test-Path "C:\Program Files\7-Zip\7z.exe"
 
@@ -286,6 +232,20 @@ function Install-Office {
       }
   }
 }
+Function Invoke-Logo {
+    
+    Clear-Host
+    Write-Host ""
+    Write-Host "___________           .__                  .____                    "
+    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
+    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
+    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
+    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
+    Write-Host "             \/     \/     \/     \/               \/           \/  "
+    Write-Host ""
+    Write-Host "                      TechnoLuc's Office Utility                    "
+    Write-Host ""
+}
 function Show-OfficeInstallMenu {
     Invoke-Logo
     Write-Host "Install Microsoft Office" -ForegroundColor Green
@@ -351,92 +311,6 @@ function Process-OfficeInstallMenu-Choice {
         }
     }
 }
-function Download-File {
-  param (
-      [string]$url,
-      [string]$outputPath
-  )
-
-  try {
-      Invoke-WebRequest -Uri $url -OutFile $outputPath -UseBasicParsing
-  }
-  catch {
-      Write-Host "Failed to download $url with error: $_"
-  }
-}
-
-function Get-ODTUri {
-  [CmdletBinding()]
-  [OutputType([string])]
-  param ()
-
-  $url = "https://www.microsoft.com/en-us/download/confirmation.aspx?id=49117"
-
-  try {
-      $response = Invoke-WebRequest -UseBasicParsing -Uri $url
-      $ODTUri = $response.links | Where-Object { $_.outerHTML -like "*click here to download manually*" }
-      if ($ODTUri) {
-          return $ODTUri.href
-      }
-      else {
-          throw "Failed to retrieve ODT download URL."
-      }
-  }
-  catch {
-      throw "Failed to connect to ODT: $url with error $_."
-  }
-}
-
-function Download-OfficeScrubber{
-  Download-File -url $ScrubberBaseUrl -outputPath $ScrubberArchivePath
-}
-
-
-function Extract-OfficeScrubber {
-  param (
-    [string]$7zPath = "C:\Program Files\7-Zip\7z.exe"
-  )
-
-  # Combine the path to the archive
-  $ScrubberArchivePath = Join-Path -Path $OfficeUtilPath -ChildPath $ScrubberArchiveName
-
-  # Create the directory if it doesn't exist yet
-  if (-not (Test-Path -Path $ScrubberPath -PathType Container)) {
-    New-Item -Path $ScrubberPath -ItemType Directory -Force | Out-Null
-  }
-
-  try {
-    # Download and extract the archive using 7-Zip
-    Download-OfficeScrubber
-    & $7zPath x $ScrubberArchivePath -o"$ScrubberPath" -y > $null
-
-    Write-Host "The archive has been successfully downloaded and extracted to: $ScrubberPath" -ForegroundColor Green
-  }
-  catch {
-    Write-Host "An error occurred while downloading and extracting the archive: $_" -ForegroundColor Red
-  }
-  finally {
-    # Clean up: Remove the downloaded archive
-    if (Test-Path -Path $ScrubberArchivePath -PathType Leaf) {
-      Remove-Item -Path $ScrubberArchivePath -Force
-    }
-  }
-}
-
-Function Invoke-Logo {
-    
-    Clear-Host
-    Write-Host ""
-    Write-Host "___________           .__                  .____                    "
-    Write-Host "\__    ___/___   ____ |  |__   ____   ____ |    |    __ __   ____   "
-    Write-Host "  |    |_/ __ \_/ ___\|  |  \ /    \ /  _ \|    |   |  |  \_/ ___\  "
-    Write-Host "  |    |\  ___/\  \___|   Y  \   |  (  <_> )    |___|  |  /\  \___  "
-    Write-Host "  |____| \___  >\___  >___|  /___|  /\____/|_______ \____/  \___  > "
-    Write-Host "             \/     \/     \/     \/               \/           \/  "
-    Write-Host ""
-    Write-Host "                      TechnoLuc's Office Utility                    "
-    Write-Host ""
-}
 function Show-OfficeMainMenu {
     Invoke-Logo
     Write-Host "Main Menu" -ForegroundColor Green
@@ -486,6 +360,132 @@ function Process-OfficeMainMenu-Choice {
             Show-OfficeMainMenu
         }
     }
+}
+function Show-OfficeRemoveMenu {
+  Invoke-Logo
+  Write-Host "Uninstall Microsoft Office" -ForegroundColor Yellow
+  Write-Host ""
+  Write-Host "1. Run Office Removal Tool with SaRa"
+  Write-Host "2. Run Office Removal Tool with Office365 Setup"
+  Write-Host "3. Run Office Scrubber"
+  Write-Host "0. Main Office Menu"
+  Write-Host "Q. Quit" -ForegroundColor Red
+  Write-Host ""
+  # $choice = Read-Host "Select an option (0-3)"
+  Write-Host -NoNewline "Select option: "
+  $choice = [System.Console]::ReadKey().KeyChar
+  Write-Host ""
+  Process-OfficeRemoveMenu-Choice $choice
+}
+
+function Process-OfficeRemoveMenu-Choice {
+  param (
+    [string]$choice
+  )
+
+  switch ($choice) {
+    '1' {
+      Invoke-Logo
+      Write-Host "Running Office Removal Tool with SaRa" -ForegroundColor Cyan
+      Invoke-OfficeRemovalTool
+      Write-Host -NoNewLine "Press any key to continue... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Show-OfficeRemoveMenu
+    }
+    '2' {
+      Invoke-Logo
+      Write-Host "Running Office Removal Tool with Office365 Setup" -ForegroundColor Cyan
+      Invoke-OfficeRemovalTool -UseSetupRemoval
+      Write-Host -NoNewLine "Press any key to continue... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Show-OfficeRemoveMenu
+    }
+    '3' {
+      Invoke-Logo
+      Write-Host "Running Office Scrubber" -ForegroundColor Cyan
+      Install-7ZipIfNeeded
+      Invoke-OfficeScrubber
+      Write-Host -NoNewLine "Press any key to continue... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Show-OfficeRemoveMenu
+    }
+    'q' {
+      Write-Host "Exiting..."
+      Stop-Script
+    }
+    '0' {
+      Show-OfficeMainMenu
+    }
+    default {
+      Write-Host -NoNewLine "Invalid option. Press any key to try again... "
+      $x = [System.Console]::ReadKey().KeyChar
+      Show-OfficeRemoveMenu
+    }
+  }
+}
+function Invoke-OfficeRemovalTool {
+    param (
+        [switch]$UseSetupRemoval
+    )
+
+    if (-not (Test-Path -Path $OfficeUtilPath -PathType Container)) {
+        New-Item -Path $OfficeUtilPath -ItemType Directory | Out-Null
+    }
+
+    if ($UseSetupRemoval.IsPresent) {
+        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot -UseSetupRemoval"
+    }
+    else {
+        $Command = "powershell -ExecutionPolicy Bypass -File $OfficeRemovalToolPath -SuppressReboot"
+    }
+
+    Invoke-WebRequest -Uri $OfficeRemovalToolUrl -OutFile $OfficeRemovalToolPath
+    Invoke-Expression $Command
+}
+
+function Invoke-OfficeScrubber {
+    try {
+        Extract-OfficeScrubber
+    }
+    catch {
+        Write-Host "Error occurred: $_" -ForegroundColor Red
+    }
+    finally {
+        Write-Host "Select [R] Remove all Licenses option in OfficeScrubber." -ForegroundColor Yellow
+    }
+
+    Start-Process -Verb runas -FilePath "cmd.exe" -ArgumentList "/C $ScrubberCmdPath"
+}
+
+function Invoke-MAS {
+    # Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-WebRequest -useb https://massgrave.dev/get | Invoke-Expression" -Wait
+    Invoke-RestMethod $MASUrl | Invoke-Expression
+}
+
+function Test-OfficeInstalled {
+    $officeInstallationPath = "C:\Program Files\Microsoft Office"
+    if (Test-Path $officeInstallationPath) {
+        Write-Host "Microsoft Office is already installed." -ForegroundColor Yellow
+        Write-Host "Run OfficeRemoverTool and OfficeScrubber to remove the previous installation first."
+        Write-Host "Or run Massgrave.dev Microsoft Activation Scripts to activate Office / Windows."
+        return $true
+    }
+    return $false
+}
+function Stop-Script {
+  if (Test-Path -Path $OfficeUtilPath -PathType Container) {
+    Invoke-Logo
+    Write-Host ""
+    Write-Host -NoNewLine "Press F to delete $OfficeUtilPath or any other key to quit: "
+    $choice = [System.Console]::ReadKey().KeyChar
+    Write-Host ""
+
+    if ($choice -eq 'f') {
+      Write-Host "Removing $OfficeUtilPath\* ..." -ForegroundColor Green
+      Remove-Item -LiteralPath $OfficeUtilPath -Force -Recurse
+    }
+  }
+  exit
 }
 # Show Main Menu
 Show-OfficeMainMenu
