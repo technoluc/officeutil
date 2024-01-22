@@ -12,6 +12,7 @@
 ####################################################################################################
 
 $OfficeUtilUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$MASUrl = "massgrave.dev/get"
 
 $OfficeUtilPath = "C:\OfficeUtil"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
@@ -469,6 +470,14 @@ function Test-OfficeInstalled {
     }
     return $false
 }
+
+function Check-Admin {
+    if (!([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
+        Write-Output "OfficeUtil needs to be run as Administrator. Attempting to relaunch."
+        Start-Process -Verb runas -FilePath powershell.exe -ArgumentList "Invoke-RestMethod `"$OfficeUtilUrl`" | Invoke-Expression" 
+        break
+    }
+}
 function Stop-Script {
   if (Test-Path -Path $OfficeUtilPath -PathType Container) {
     Invoke-Logo
@@ -485,6 +494,8 @@ function Stop-Script {
   exit
 }
 # Show Main Menu
+
+Check-Admin
 Show-OfficeMainMenu
 
 Stop-Script
