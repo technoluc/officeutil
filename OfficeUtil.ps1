@@ -20,8 +20,8 @@ $odtInstallerPath = Join-Path -Path $OfficeUtilPath -ChildPath "odtInstaller.exe
 $setupExePath = Join-Path -Path $odtPath -ChildPath "setup.exe"
 $configuration21XMLPath = Join-Path -Path $odtPath -ChildPath "config21.xml"
 $configuration365XMLPath = Join-Path -Path $odtPath -ChildPath "config365.xml"
-$configuration21XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config21.xml"
-$configuration365XMLUrl = "https://github.com/technoluc/winutil/raw/main-custom/office/config365.xml"
+$configuration21XMLUrl = "https://github.com/technoluc/officeutil/raw/main/config/config21.xml"
+$configuration365XMLUrl = "https://github.com/technoluc/officeutil/raw/main/config/config365.xml"
 $MASUrl = "https://massgrave.dev/get"
 
 # OfficeScrubber
