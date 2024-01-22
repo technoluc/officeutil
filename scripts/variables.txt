@@ -5,6 +5,7 @@
 ####################################################################################################
 
 $OfficeUtilUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
+$MASUrl = "massgrave.dev/get"
 
 $OfficeUtilPath = "C:\OfficeUtil"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
