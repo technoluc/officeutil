@@ -5,9 +5,6 @@
 ####################################################################################################
 
 $OfficeUtilUrl = "https://raw.githubusercontent.com/technoluc/officeutil/main/OfficeUtil.ps1"
-$WinUtilUrl = "https://raw.githubusercontent.com/technoluc/winutil/main/winutil.ps1"
-$BinUtilUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemes.ps1"
-$BinUtilGUIUrl = "https://raw.githubusercontent.com/technoluc/recycle-bin-themes/main/RecycleBinThemesGUI.ps1"
 
 $OfficeUtilPath = "C:\OfficeUtil"
 $odtPath = "C:\Program Files\OfficeDeploymentTool"
