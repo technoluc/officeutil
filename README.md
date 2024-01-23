@@ -45,7 +45,7 @@ This script is provided under the [MIT License](LICENSE.md). Feel free to use, m
 - [massgrave.dev](https://massgrave.dev) - For providing activation scripts.
 
 ## Author
-[Your Name]
+TechnoLuc
 
 ## Support
 For any issues or questions, please open an [issue](https://github.com/yourusername/yourrepository/issues).
